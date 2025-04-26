@@ -1,0 +1,92 @@
+
+<div *ngIf="profileService.dataSignal() as user">
+
+    <div class="card">
+      <div class="cover-bg"></div>
+      <div class="user-info-wrap">
+        <div class="user-photo" style=" background: #fff url({{user.URLFOTO}}) no-repeat center;background-size: cover;">
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{user.NOMBRES}}</div>
+          <div class="user-title">
+            {{user.TIPO}}
+          </div>
+        </div>
+      </div>
+      <div class="user-bio">
+        <p-tabView>
+          <p-tabPanel header="Información Personal">
+            <!--  -->
+            <div class="grid">
+              
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-user" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.CEDULA}}</b></div>
+                    <div>cédula</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-id-card" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.ID}}</b></div>
+                    <div>código institucional</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-user" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.NOMBRES }} </b></div>
+                    <div>nombres</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-envelope" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.CORREOPERSONAL}}</b></div>
+                    <div>correo personal</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-envelope" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.CORREOINSTITUCIONAL}}</b></div>
+                    <div>correo institucional</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 sm:col-12">
+                <div style="display: flex; align-items: center; margin-left: 5px;">
+                  <p-avatar size="normal" icon="pi pi-map-marker" styleClass="mr-0" shape="circle"
+                    [style]="{'background-color':'#1B74C5', 'color': '#ffffff'}"></p-avatar>
+                  <div style="margin-left: 5px;">
+                    <div><b>{{user.UBICACION}}</b></div>
+                    <div>ubicación</div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </p-tabPanel>
+        </p-tabView>
+  
+        <p-messages [(value)]="messages" [enableService]="false" [closable]="false" />
+  
+  
+      </div>
+    </div>
+  </div>

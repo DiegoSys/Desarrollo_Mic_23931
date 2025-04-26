@@ -1,0 +1,29 @@
+<div class="layout-menu-profile">
+    <button class="p-link border-noround" (click)="toggleMenu()" pTooltip="Profile"
+        [tooltipDisabled]="isTooltipDisabled">
+        <img *ngIf="globalUser$ | async as globalUser" [src]="globalUser.URLFOTO" alt="avatar"
+            style="width: 32px; height: 32px; border-radius: 25px;">
+        <span>
+            <strong *ngIf="globalUser$ | async as globalUser">{{ globalUser.NOMBRES }}
+            </strong>
+            <!-- <small>Webmaster</small> -->
+        </span>
+        <i class="layout-menu-profile-toggler pi pi-fw"
+            [ngClass]="{'pi-angle-down': menuProfilePosition === 'start' || isHorizontal, 'pi-angle-up': menuProfilePosition === 'end' && !isHorizontal}"></i>
+    </button>
+
+    <ul *ngIf="menuProfileActive" [@menu]="isHorizontal ? 'overlay' : 'inline'">
+        <li pTooltip="perfil" [tooltipDisabled]="isTooltipDisabled">
+            <button class="p-link" [routerLink]="['/profile']">
+                <i class="pi pi-power-off pi-user"></i>
+                <span>Ver perfil</span>
+            </button>
+        </li>
+        <li pTooltip="Logout" [tooltipDisabled]="isTooltipDisabled">
+            <button class="p-link" (click)="logout()">
+                <i class="pi pi-power-off pi-fw"></i>
+                <span>Cerrar Sesión</span>
+            </button>
+        </li>
+    </ul>
+</div>

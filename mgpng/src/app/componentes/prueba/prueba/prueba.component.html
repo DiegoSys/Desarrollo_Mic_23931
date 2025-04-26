@@ -1,0 +1,9 @@
+<div *ngIf="loading$ | async; else content">
+        <app-spinner>
+        </app-spinner>
+</div>
+    <ng-template #content>
+        <p>{{texto}}</p>
+    </ng-template>
+
+  

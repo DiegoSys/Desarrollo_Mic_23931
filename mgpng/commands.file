@@ -1,0 +1,7 @@
+ng g m componentes/apelacion/  --routing 
+
+ng g s componentes/apelacion/apelacion --skip-tests
+
+ng g c componentes/apelacion/example --skip-tests --no-standalone
+
+//agregar carpeta interfaces,submenu,
