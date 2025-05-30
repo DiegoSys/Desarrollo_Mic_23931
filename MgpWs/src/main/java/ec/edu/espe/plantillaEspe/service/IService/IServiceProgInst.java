@@ -1,13 +1,19 @@
 package ec.edu.espe.plantillaEspe.service.IService;
 
-import ec.edu.espe.plantillaEspe.model.ProgInst;
+import ec.edu.espe.plantillaEspe.dto.DtoEje;
+import ec.edu.espe.plantillaEspe.dto.DtoProgInst;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface IServiceProgInst {
-    ProgInst find(String codigo);
-    List<ProgInst> findAll();
-    ProgInst save(ProgInst objetivo);
-    ProgInst update(ProgInst objetivo);
-    void delete(String codigo);
-
+    DtoProgInst find(String codigo);
+    Page<DtoProgInst> findAll(Pageable pageable);
+    List<DtoProgInst> findAll();
+    List<DtoProgInst> findAllActivos();
+    Page<DtoProgInst> findAllActivos(Pageable pageable);
+    DtoProgInst save(DtoProgInst dtoProgInst, String accessToken);
+    DtoProgInst update(DtoProgInst dtoProgInst, String accessToken);
+    void delete(String codigo, String accessToken);
 }

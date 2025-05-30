@@ -2,7 +2,6 @@ package ec.edu.espe.plantillaEspe.dto;
 
 import lombok.Data;
 import java.util.Date;
-import java.util.Set;
 
 @Data
 public class DtoProyectoSeccion
@@ -13,6 +12,6 @@ public class DtoProyectoSeccion
     private Date fechaCreacion;
     private String usuarioModificacion;
     private Date fechaModificacion;
-    private String codigoTipoProyecto; // UZKTTIPOPROYEC_CODE (FK)
-    private String codigoSeccion; // UZKTSECCIONES_CODE (FK)
+    private String codigoProyectoFK;
+    private String codigoSeccionFk;
 }

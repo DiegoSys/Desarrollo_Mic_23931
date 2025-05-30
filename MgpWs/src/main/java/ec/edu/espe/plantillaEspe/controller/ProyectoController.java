@@ -1,6 +1,8 @@
 package ec.edu.espe.plantillaEspe.controller;
 
 import ec.edu.espe.plantillaEspe.dto.DtoProyecto;
+import ec.edu.espe.plantillaEspe.exception.DataValidationException;
+import ec.edu.espe.plantillaEspe.exception.NotFoundException;
 import ec.edu.espe.plantillaEspe.service.ServiceProyecto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,51 +19,141 @@ import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(V1_API_VERSION+"/proyecto")
+@RequestMapping(V1_API_VERSION + "/proyecto")
 public class ProyectoController {
 
-    @Autowired
-    private ServiceProyecto serviceProyecto;
+    private final ServiceProyecto serviceProyecto;
 
-    @GetMapping("/{codigo}")
-    public ResponseEntity<DtoProyecto> find(@PathVariable String codigo) {
-        DtoProyecto proyecto = this.serviceProyecto.find(codigo);
-        return new ResponseEntity<>(proyecto, HttpStatus.OK);
+    @Autowired
+    public ProyectoController(ServiceProyecto serviceProyecto) {
+        this.serviceProyecto = serviceProyecto;
     }
 
-    // Nuevo endpoint paginado
+    @GetMapping("/{codigo}")
+    public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
+        if (codigo == null || codigo.isEmpty()) {
+            return badRequest("El código del proyecto no puede ser nulo o vacío.");
+        }
+
+        try {
+            DtoProyecto proyecto = serviceProyecto.find(codigo);
+            return ResponseEntity.ok(proyecto);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (NotFoundException e) {
+            return notFound(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al buscar el proyecto.");
+        }
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> findAll() {
+        try {
+            List<DtoProyecto> proyectos = serviceProyecto.findAll();
+            return ResponseEntity.ok(proyectos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los proyectos.");
+        }
+    }
+
     @GetMapping
-    public ResponseEntity<Page<DtoProyecto>> findAllPaginado(
+    public ResponseEntity<?> findAllPaginado(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "asc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction) {
 
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ?
-                Sort.Direction.DESC : Sort.Direction.ASC;
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        return ResponseEntity.ok(serviceProyecto.findAll(pageable));
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoProyecto> proyectos = serviceProyecto.findAll(pageable);
+            return ResponseEntity.ok(proyectos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los proyectos paginados.");
+        }
     }
 
     @PostMapping("/add")
-    public ResponseEntity<DtoProyecto> save(@RequestBody DtoProyecto body) {
-        DtoProyecto savedProyecto = this.serviceProyecto.save(body);
-        return new ResponseEntity<>(savedProyecto, HttpStatus.CREATED);
+    public ResponseEntity<?> create(
+            @RequestBody DtoProyecto proyecto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = extractToken(authHeader);
+            DtoProyecto savedProyecto = serviceProyecto.save(proyecto, token);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProyecto);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al crear el proyecto.");
+        }
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<DtoProyecto> update(@RequestBody DtoProyecto body) {
-        DtoProyecto updatedProyecto = this.serviceProyecto.update(body);
-        if (updatedProyecto == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @PutMapping("/update/{codigo}")
+    public ResponseEntity<?> update(
+            @PathVariable String codigo,
+            @RequestBody DtoProyecto proyecto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = extractToken(authHeader);
+            proyecto.setCodigo(codigo);
+            DtoProyecto updatedProyecto = serviceProyecto.update(proyecto, token);
+            return ResponseEntity.ok(updatedProyecto);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (NotFoundException e) {
+            return notFound(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al actualizar el proyecto.");
         }
-        return new ResponseEntity<>(updatedProyecto, HttpStatus.OK);
     }
 
     @DeleteMapping("/{codigo}")
-    public ResponseEntity<Void> delete(@PathVariable String codigo) {
-        this.serviceProyecto.delete(codigo);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> delete(@PathVariable String codigo) {
+        if (codigo == null || codigo.isEmpty()) {
+            return badRequest("El código del proyecto no puede ser nulo o vacío.");
+        }
+
+        try {
+            serviceProyecto.delete(codigo);
+            return ResponseEntity.noContent().build();
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (NotFoundException e) {
+            return notFound(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al eliminar el proyecto.");
+        }
+    }
+
+    private ResponseEntity<String> badRequest(String message) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"" + message + "\"}");
+    }
+
+    private ResponseEntity<String> notFound(String message) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"" + message + "\"}");
+    }
+
+    private ResponseEntity<String> internalServerError(String message) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"" + message + "\"}");
+    }
+
+    private String extractToken(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        throw new DataValidationException("Token de autorización no válido");
     }
 }

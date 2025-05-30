@@ -19,25 +19,17 @@ const routes: Routes = [
                         (m) => m.ProfileModule
                     ),
             },
+
             {
-                path: 'prueba',
+                path: 'gestionPoa',
                 data: { breadcrumb: 'Apps' },
                 loadChildren: () =>
-                    import('./componentes/prueba/prueba.module').then(
-                        (m) => m.PruebaModule
-                    ),
-            },
-            {
-                path: 'proyeccion',
-                data: { breadcrumb: 'Apps' },
-                loadChildren: () =>
-                    import('./componentes/proyeccion/proyeccion.module').then(
-                        (m) => m.ProyeccionModule
+                    import('./componentes/gestion-poa/gestion-poa.module').then(
+                        (m) => m.GestionPOAModule
                     ),
             }
         ],
     },
-    // { path: 'landing', loadChildren: () => import('./demo/components/landing/landing.module').then(m => m.LandingModule) },
     { path: '**', redirectTo: '/notfound' },
 ];
 

@@ -1,12 +1,19 @@
 package ec.edu.espe.plantillaEspe.service.IService;
 
-import ec.edu.espe.plantillaEspe.model.PDN;
+import ec.edu.espe.plantillaEspe.dto.DtoOPN;
+import ec.edu.espe.plantillaEspe.dto.DtoPDN;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface IServicePDN {
-    PDN find(String codigo);
-    List<PDN> findAll();
-    PDN save(PDN objetivo);
-    PDN update(PDN objetivo);
-    void delete(String codigo);
+    DtoPDN find(String codigo);
+    Page<DtoPDN> findAll(Pageable pageable);
+    List<DtoPDN> findAll();
+    List<DtoPDN> findAllActivos();
+    Page<DtoPDN> findAllActivos(Pageable pageable);
+    DtoPDN save(DtoPDN dtoPDN, String accessToken);
+    DtoPDN update(DtoPDN dtoPDN, String accessToken);
+    void delete(String codigo, String accessToken);
 }

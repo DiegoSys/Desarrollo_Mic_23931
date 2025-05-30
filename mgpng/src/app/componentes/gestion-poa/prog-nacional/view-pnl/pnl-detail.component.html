@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="pnl; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Programa Nacional de la Meta'"
+      [subtitle]="'Visualizando Programa Nacional: ' + (pnl?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

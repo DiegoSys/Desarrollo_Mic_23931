@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="eje; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Eje'"
+      [subtitle]="'Visualizando Eje: ' + (eje?.codigo || '')"
+      [icon]="'pi pi-share-alt'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

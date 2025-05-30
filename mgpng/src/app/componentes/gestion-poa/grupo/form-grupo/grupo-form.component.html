@@ -1,0 +1,20 @@
+<p-confirmDialog [style]="{width: '500px'}" [baseZIndex]="10000"></p-confirmDialog>
+<p-toast></p-toast>
+
+<div>
+  <ng-container *ngIf="!loading; else loadingTemplate">
+    <app-generic-form
+      [title]="isEditing ? 'Editar Grupo' : 'Nuevo Grupo'"
+      [fields]="formFields"
+      [submitText]="isEditing ? 'Actualizar' : 'Guardar'"
+      [showCancelButton]="true"
+      [isEditing]="isEditing"
+      (formSubmit)="onSubmit($event)"
+      (cancel)="onCancel()">
+    </app-generic-form>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner></app-spinner>
+  </ng-template>
+</div>

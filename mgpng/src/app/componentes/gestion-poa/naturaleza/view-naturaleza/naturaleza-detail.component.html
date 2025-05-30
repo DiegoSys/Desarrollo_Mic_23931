@@ -1,0 +1,22 @@
+<div>
+  <ng-container *ngIf="naturaleza; else loadingTemplate">
+    <app-generic-view [loading]="loading" [title]="'Detalle Naturaleza'"
+      [subtitle]="'Visualizando Naturaleza: ' + (naturaleza?.codigo || '')" [icon]="'pi pi-leaf'" [fields]="viewFields"
+      [backRoute]="'../'">
+
+      <h3
+        class="mt-4 mb-3 px-4 py-2 border-start border-5 border-success bg-white text-success shadow-sm rounded-3 d-inline-flex align-items-center"
+        style="font-size: 1.35rem; letter-spacing: 1px;">
+        <i class="pi pi-users me-3 fs-4 text-success"></i>
+        <span class="fw-semibold">Grupos relacionados</span>
+      </h3>
+      <app-generic-table [data]="grupoList" [config]="grupoTableConfig" [loading]="loading">
+      </app-generic-table>
+
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

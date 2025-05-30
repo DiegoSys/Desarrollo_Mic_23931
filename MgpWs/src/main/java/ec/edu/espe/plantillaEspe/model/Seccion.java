@@ -2,11 +2,12 @@ package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.Data;
+import lombok.ToString;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
 
@@ -17,11 +18,12 @@ public class Seccion {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "UZKTSECCIONES_CODE")
-    private String codigo;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTSECCIONES_ID")
     private Long id;
+
+    @Column(name = "UZKTSECCIONES_CODE", unique = true)
+    private String codigo;
 
     @Column(name = "UZKTSECCIONES_DESC", nullable = false)
     private String descripcion;
@@ -45,9 +47,12 @@ public class Seccion {
     @Column(name = "UZKTSECCIONES_USER_MOD")
     private String modificationUser;
 
-    @OneToMany(mappedBy = "seccion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SeccionCampo> seccionCampos = new HashSet<>();
+    @OneToMany(mappedBy = "seccion", fetch = FetchType.LAZY)
+    List<SeccionCampo> seccionCampos;
 
-    @OneToMany(mappedBy = "seccion", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ProyectoSeccion> proyectoSecciones = new HashSet<>();
+    @ToString.Exclude  // Excluir del toString para evitar recursión
+    @OneToMany(mappedBy = "seccion", fetch = FetchType.LAZY)
+    List<ProyectoSeccion> proyectoSecciones = new ArrayList<>();
+
+
 }

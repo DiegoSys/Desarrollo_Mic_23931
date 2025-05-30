@@ -157,10 +157,14 @@ export class AppLayoutComponent implements OnDestroy {
 
         this.router.events
             .pipe(filter((event) => event instanceof NavigationEnd))
-            .subscribe(() => {
-                this.hideMenu();
-                this.hideTopbarMenu();
-                this.hideMenuProfile();
+            .subscribe((event: NavigationEnd) => {
+                // Solo cerrar menú para rutas específicas (como login, logout, etc)
+                const closeMenuRoutes = ['/login', '/logout'];
+                if (closeMenuRoutes.some(route => event.url.includes(route))) {
+                    this.hideMenu();
+                    this.hideTopbarMenu();
+                    this.hideMenuProfile();
+                }
             });
     }
 

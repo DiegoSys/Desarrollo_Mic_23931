@@ -1,6 +1,8 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Date;
@@ -13,10 +15,11 @@ import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
 public class Eje {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTEJE_ID")
     private Long id;
 
-    @Id
     @Column(name = "UZKTEJE_CODE", length = 60)
     private String codigo;
 
@@ -26,11 +29,18 @@ public class Eje {
     @Column(name = "UZKTEJE_DESC", length = 360)
     private String descripcion;
 
+    @Column(name = "UZKTEJE_STATUS", length = 6)
+    private Estado estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTEJE_ALINEACION")
+    private TipoAlineacion alineacion;
+
     @Column(name = "UZKTEJE_USER_CREA", length = 60)
     private String usuarioCreacion;
 
     @Column(name = "UZKTEJE_FEC_CREA")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaCreacion;
 
@@ -38,7 +48,7 @@ public class Eje {
     private String usuarioModificacion;
 
     @Column(name = "UZKTEJE_FEC_MOD")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaModificacion;
 }

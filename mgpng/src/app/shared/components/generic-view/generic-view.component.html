@@ -1,0 +1,84 @@
+<div class="view-container">
+  <div class="view-header">
+    <div class="header-content">
+      <h2>{{title}}</h2>
+      <div class="view-code-banner" *ngIf="subtitle">
+        <i class="pi pi-info-circle"></i>
+        <span>{{subtitle}}</span>
+      </div>
+    </div>
+    <div class="header-icon">
+      <i [class]="icon"></i>
+    </div>
+  </div>
+
+  <div [class.view-grid]="layout === 'grid'" 
+       [class.view-list]="layout === 'list'"
+       [style.grid-template-columns]="'repeat(' + gridColumns + ', 1fr)'"
+       *ngIf="!loading; else loadingTemplate">
+    <div class="view-field" *ngFor="let field of fields"
+         [class.full-width]="field.width === 'full'"
+         [class.third-width]="field.width === 'third'"
+         [class.quarter-width]="field.width === 'quarter'"
+         [class]="field.cssClass">
+      <label class="view-label">{{field.label}}</label>
+      <div class="view-value-wrapper">
+        <span class="view-icon" *ngIf="field.icon">
+          <i [class]="field.icon"></i>
+        </span>
+        
+        <ng-container [ngSwitch]="field.type || 'text'">
+          <!-- Texto normal -->
+          <span *ngSwitchCase="'text'" class="view-value">
+            {{field.value}}
+          </span>
+
+          <!-- Estado -->
+          <span *ngSwitchCase="'status'" class="view-value status"
+                [class.status-active]="field.value === field.config?.status?.activeValue"
+                [class.status-inactive]="field.value === field.config?.status?.inactiveValue">
+            {{field.value === field.config?.status?.activeValue ? 
+              (field.config?.status?.activeLabel || 'Activo') : 
+              (field.config?.status?.inactiveLabel || 'Inactivo')}}
+          </span>
+
+          <!-- Multilínea -->
+          <span *ngSwitchCase="'multiline'" class="view-value multiline">
+            {{field.value}}
+          </span>
+
+          <!-- Custom -->
+          <ng-container *ngSwitchCase="'custom'">
+            <ng-container *ngTemplateOutlet="field.value"></ng-container>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aquí permites contenido personalizado como la tabla de grupos -->
+  <ng-content></ng-content>
+
+  <ng-template #loadingTemplate>
+    <app-spinner></app-spinner>
+  </ng-template>
+
+  <div class="view-actions">
+    <button pButton type="button" class="p-button-outlined back-button" 
+            [routerLink]="backRoute">
+      <i class="pi pi-arrow-left"></i>
+      <span>Volver</span>
+    </button>
+    
+    <ng-container *ngFor="let action of customActions">
+      <button pButton 
+              [type]="action.type || 'button'"
+              [icon]="action.icon"
+              [label]="action.label"
+              [class]="action.class || 'p-button-secondary'"
+              (click)="action.handler()"
+              *ngIf="action.visible !== false">
+      </button>
+    </ng-container>
+  </div>
+</div>

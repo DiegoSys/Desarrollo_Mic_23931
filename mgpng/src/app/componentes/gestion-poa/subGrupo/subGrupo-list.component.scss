@@ -1,0 +1,77 @@
+@import 'src/assets/layout/styles/layout/layout';
+
+/* Estilos institucionales */
+.card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+}
+
+/* Color institucional para subgrupos */
+$subgrupo-color: #1976d2;
+
+h2 {
+  color: $subgrupo-color;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 2px solid $subgrupo-color;
+  padding-bottom: 0.5rem;
+}
+
+/* Botones */
+.p-button {
+  border: 1px solid $subgrupo-color;
+  background-color: transparent;
+  color: $subgrupo-color;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    background-color: $subgrupo-color;
+    color: white;
+    border-color: darken($subgrupo-color, 10%);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba($subgrupo-color, 0.3);
+  }
+}
+
+/* Botones pequeños */
+.p-button-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Botones con íconos */
+.p-button .pi {
+  margin-right: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+
+  .p-button {
+    font-weight: 500;
+  }
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #616161;
+  font-style: italic;
+}
+
+/* Oculta el spinner predeterminado de PrimeNG */
+:host ::ng-deep .p-datatable .p-datatable-loading-overlay {
+  display: none !important;
+}
+
+.loading-overlay {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}

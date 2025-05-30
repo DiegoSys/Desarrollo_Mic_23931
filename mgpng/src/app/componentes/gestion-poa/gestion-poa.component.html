@@ -1,0 +1,28 @@
+<div class="poa-container">
+  <div class="poa-content">
+    <!-- Wizard para formulario multi-paso -->
+    <div *ngIf="!showOdsTable" class="wizard-container">
+      <p-steps [model]="steps" [activeIndex]="activeIndex"></p-steps>
+      
+      <div class="wizard-step" *ngIf="activeIndex === 0">
+        <h4>Seleccionar ODS</h4>
+        <p-dropdown [options]="odsOptions" [(ngModel)]="selectedOds" 
+                   optionLabel="label" optionValue="value"
+                   [showClear]="true" placeholder="Seleccione un ODS">
+        </p-dropdown>
+        <button pButton label="Siguiente" (click)="nextStep()"></button>
+      </div>
+
+      <div class="wizard-step" *ngIf="activeIndex === 1">
+        <!-- Segundo paso del formulario -->
+        <button pButton label="Anterior" (click)="prevStep()"></button>
+        <button pButton label="Siguiente" (click)="nextStep()"></button>
+      </div>
+
+      <!-- Más pasos según sea necesario -->
+    </div>
+
+    <!-- Tabla de ODS -->
+    <router-outlet *ngIf="showOdsTable"></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="prodIns; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Producto Institucional'"
+      [subtitle]="'Visualizando Producto Institucional: ' + (prodIns?.codigo || '')"
+      [icon]="'pi pi-box'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

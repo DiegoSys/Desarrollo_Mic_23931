@@ -1,12 +1,19 @@
 package ec.edu.espe.plantillaEspe.service.IService;
 
-import ec.edu.espe.plantillaEspe.model.ObjOperativo;
+import ec.edu.espe.plantillaEspe.dto.DtoEje;
+import ec.edu.espe.plantillaEspe.dto.DtoObjOperativo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface IServiceObjOperativo {
-    ObjOperativo find(String codigo);
-    List<ObjOperativo> findAll();
-    ObjOperativo save(ObjOperativo objetivo);
-    ObjOperativo update(ObjOperativo objetivo);
-    void delete(String codigo);
+    DtoObjOperativo find(String codigo);
+    Page<DtoObjOperativo> findAll(Pageable pageable);
+    List<DtoObjOperativo> findAll();
+    List<DtoObjOperativo> findAllActivos();
+    Page<DtoObjOperativo> findAllActivos(Pageable pageable);
+    DtoObjOperativo save(DtoObjOperativo dtoObjOperativo, String token);
+    DtoObjOperativo update(DtoObjOperativo dtoObjOperativo, String token);
+    void delete(String codigo, String token);
 }

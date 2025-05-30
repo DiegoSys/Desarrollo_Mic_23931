@@ -3,9 +3,8 @@ package ec.edu.espe.plantillaEspe.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
 
@@ -16,11 +15,12 @@ public class Campo {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "UZKTCAMPOS_CODE", length = 60)
-    private String codigo;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTCAMPOS_ID")
     private Long id;
+
+    @Column(name = "UZKTCAMPOS_CODE", length = 60, unique = true)
+    private String codigo;
 
     @Column(name = "UZKTCAMPOS_DESC", length = 360)
     private String descripcion;
@@ -44,6 +44,8 @@ public class Campo {
     @Temporal(TemporalType.DATE)
     private Date fechaModificacion;
 
-    @OneToMany(mappedBy = "campo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SeccionCampo> seccionCampos = new HashSet<>();
+    @OneToMany(mappedBy = "campo", fetch = FetchType.LAZY)
+    List<SeccionCampo> seccionCampos = new ArrayList<>();
+
+
 }

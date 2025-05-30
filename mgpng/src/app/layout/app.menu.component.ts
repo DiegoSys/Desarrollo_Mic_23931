@@ -1,7 +1,6 @@
 import { OnInit } from '@angular/core';
 import { Component } from '@angular/core';
-import { subMenuProyeccion } from '../componentes/proyeccion/submenu';
-
+import { subMenuGestionPOA_ESTRATEGICO, subMenuGestionPOA_OPERATIVO } from '../componentes/gestion-poa/submenu';
 
 @Component({
     selector: 'app-menu',
@@ -17,27 +16,26 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-home',
                 items: [
                     {
-                        label: 'PRUEBA',
-                        icon: 'pi pi-fw pi-home',
+                        label: 'LINEAMIENTOS',
+                        icon: 'pi pi-fw pi-sitemap',
                         items: [
                             {
-                                label: 'E-Commerce',
-                                icon: 'pi pi-fw pi-home',
-                                routerLink: ['prueba/prueba'],
+                                label: 'ESTRATÉGICO',
+                                icon: 'pi pi-fw pi-briefcase',
+                                items: subMenuGestionPOA_ESTRATEGICO,
                             },
+                            {
+                                label: 'OPERATIVO',
+                                icon: 'pi pi-fw pi-cog',
+                                items: subMenuGestionPOA_OPERATIVO,
+                            }
                         ],
                     },
                     {
-                        label: 'PRUEBA',
-                        icon: 'pi pi-fw pi-calendar',
-                        routerLink: ['prueba/prueba'],
+                        label: 'Planificación POA',
+                        icon: 'pi pi-fw pi-check-square',
+                        routerLink: ['/gestionPoa'],
                     },
-                    {
-                        label:'PROYECCIÓN',
-                        icon: 'pi pi-fw pi-chart-line',
-                        items: subMenuProyeccion,
-                    }
-                        
                 ],
             },
         ];

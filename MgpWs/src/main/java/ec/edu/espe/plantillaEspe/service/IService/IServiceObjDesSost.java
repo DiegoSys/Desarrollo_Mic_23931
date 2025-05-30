@@ -1,13 +1,16 @@
 package ec.edu.espe.plantillaEspe.service.IService;
 
-import ec.edu.espe.plantillaEspe.model.ObjDesSost;
+import ec.edu.espe.plantillaEspe.dto.DtoObjDesSost;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface IServiceObjDesSost {
-    ObjDesSost find(String codigo);
-    List<ObjDesSost> findAll();
-    ObjDesSost save(ObjDesSost ods);
-    ObjDesSost update(ObjDesSost ods);
-    void delete(String codigo);
-
+    DtoObjDesSost find(String codigo);
+    Page<DtoObjDesSost> findAllActivos(Pageable pageable);
+    List<DtoObjDesSost> findAllActivos();
+    DtoObjDesSost save(DtoObjDesSost dtoObjDesSost, String accessToken);
+    DtoObjDesSost update(DtoObjDesSost dtoObjDesSost, String accessToken);
+    void delete(String codigo, String accessToken);
 }

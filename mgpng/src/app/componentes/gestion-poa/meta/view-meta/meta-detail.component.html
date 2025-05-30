@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="meta; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Meta del PND'"
+      [subtitle]="'Visualizando Meta del PND: ' + (meta?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

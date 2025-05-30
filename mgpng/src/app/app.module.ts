@@ -7,6 +7,8 @@ import { OAuthModule, OAuthService } from 'angular-oauth2-oidc';
 import { FormsModule } from '@angular/forms';
 import { ApiInterceptorService } from './config/interceptor/api-interceptor.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { DropdownModule } from 'primeng/dropdown';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 @NgModule({
     declarations: [AppComponent],
     imports: [
@@ -14,6 +16,8 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         AppLayoutModule,
         OAuthModule.forRoot(),
         FormsModule,
+        DropdownModule,
+        BrowserAnimationsModule
     ],
     providers: [
         { provide: LocationStrategy, useClass: HashLocationStrategy },

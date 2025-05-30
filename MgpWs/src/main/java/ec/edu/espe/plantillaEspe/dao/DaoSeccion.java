@@ -1,11 +1,9 @@
 package ec.edu.espe.plantillaEspe.dao;
 
+import java.util.Optional;
 import ec.edu.espe.plantillaEspe.model.Seccion;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
+
 
 /**
  * Interfaz que define las operaciones de acceso a datos para la entidad ModelUzktsecciones.
@@ -14,5 +12,7 @@ import org.springframework.data.repository.CrudRepository;
  * @author ITS
  */
 public interface DaoSeccion extends JpaRepository<Seccion, String> {
+
+    Optional<Seccion> findByCodigo(String codigo);
 
 }

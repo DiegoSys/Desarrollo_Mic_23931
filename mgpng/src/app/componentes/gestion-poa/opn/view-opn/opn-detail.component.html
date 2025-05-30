@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="opn; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Objetivo Multisectorial'"
+      [subtitle]="'Visualizando Objetivo Multisectorial: ' + (opn?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

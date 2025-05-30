@@ -1,8 +1,10 @@
 package ec.edu.espe.plantillaEspe.dto;
 
 import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 @Data
 public class DtoSeccion
@@ -15,5 +17,5 @@ public class DtoSeccion
     private Date fechaCreacion;
     private String usuarioModificacion;
     private Date fechaModificacion;
-    private Set<DtoSeccionCampo> Campos;
+    private List<DtoSeccionCampo> campos = new ArrayList<>();
 }

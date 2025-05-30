@@ -36,16 +36,20 @@ export class ApiInterceptorService implements HttpInterceptor {
             return next.handle(authReq).pipe(
                 catchError((error) => {
                     if (error.status === 400) {
+                        const errorMsg = error.error?.error || 
+                                       error.error?.message || 
+                                       error.message || 
+                                       'Error en la solicitud';
                         this.mensajeService.alertasSweet2Simple(
                             'error',
-                            'SOLICITUD INCORRECTA',
-                            error.error.message
+                            'Error',
+                            errorMsg
                         );
                     } else if (error.status === 401) {
                         this.mensajeService.alertasSweetKeyRecoverConfirmationReturnLogin(
                             'error',
-                            ' NO AUTORIZADO',
-                            'El usuario no tiene acceso al sistema.'
+                            ' SESIÓN EXPIRADA',
+                            'por favor inicie sesión nuevamente',
                         );
                     } else if (error.status === 403) {
                         this.mensajeService.alertasSweet2Simple(

@@ -1,45 +1,53 @@
 package ec.edu.espe.plantillaEspe.service;
 
 import ec.edu.espe.plantillaEspe.config.security.UserInfoService;
-import ec.edu.espe.plantillaEspe.dao.DaoCampo;
 import ec.edu.espe.plantillaEspe.dao.DaoSeccion;
-import ec.edu.espe.plantillaEspe.dto.DtoCampo;
 import ec.edu.espe.plantillaEspe.dto.DtoSeccion;
+import ec.edu.espe.plantillaEspe.dto.DtoSeccionCampo;
 import ec.edu.espe.plantillaEspe.exception.DataValidationException;
-import ec.edu.espe.plantillaEspe.model.Campo;
 import ec.edu.espe.plantillaEspe.model.Seccion;
-import ec.edu.espe.plantillaEspe.model.SeccionCampo;
 import ec.edu.espe.plantillaEspe.service.IService.IServiceSeccion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ServiceSeccion implements IServiceSeccion {
 
     private final DaoSeccion daoSeccion;
     private final UserInfoService userInfoService;
-    private final DaoCampo daoCampo;
 
     @Autowired
-    public ServiceSeccion(DaoSeccion daoSeccion, UserInfoService userInfoService, DaoCampo daoCampo) {
+    public ServiceSeccion(DaoSeccion daoSeccion,
+                          UserInfoService userInfoService) {
         this.daoSeccion = daoSeccion;
         this.userInfoService = userInfoService;
-        this.daoCampo = daoCampo;
     }
 
     @Override
     public DtoSeccion find(String codigo) {
         validateCodigo(codigo);
-        Seccion seccion = daoSeccion.findById(codigo)
+        return daoSeccion.findByCodigo(codigo)
+                .map(this::convertToDto)
                 .orElseThrow(() -> new DataValidationException("No se encontró una sección con el código especificado."));
-        return convertToDto(seccion);
+    }
+
+    @Override
+    public List<DtoSeccion> findAll() {
+        try {
+            return daoSeccion.findAll().stream()
+                    .map(this::convertToDto)
+                    .toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener todos los secciones.", e);
+        }
     }
 
     @Override
@@ -55,89 +63,62 @@ public class ServiceSeccion implements IServiceSeccion {
     }
 
     @Override
+    @Transactional
+    public void delete(String codigo) {
+        validateCodigo(codigo);
+        Seccion seccion = daoSeccion.findByCodigo(codigo)
+                .orElseThrow(() -> new DataValidationException("No se encontró una sección con el código especificado."));
+
+        try {
+            daoSeccion.delete(seccion);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar la sección.", e);
+        }
+    }
+
+    @Override
     public DtoSeccion save(DtoSeccion dtoSeccion, String accessToken) {
         validateDtoSeccion(dtoSeccion);
 
-        // Verificar si ya existe una sección con el mismo código
-        if (daoSeccion.existsById(dtoSeccion.getCodigo())) {
+        if (daoSeccion.findByCodigo(dtoSeccion.getCodigo()).isPresent()) {
             throw new DataValidationException("Ya existe una sección con el código especificado.");
         }
 
-        // Obtener información del usuario
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
-        String username = (String) userInfo.get("username");
+        String username = (String) userInfo.get("name");
 
-        // Convertir DTO a Entidad
         Seccion seccion = new Seccion();
         seccion.setCodigo(dtoSeccion.getCodigo());
         seccion.setDescripcion(dtoSeccion.getDescripcion());
-        seccion.setEstado("1"); // 1 = ACTIVO
+        seccion.setEstado("1");
         seccion.setCreationDateA(new Date());
         seccion.setCreationUser(username);
 
-        // Procesar los campos asociados a la sección
-        if (dtoSeccion.getCampos() != null && !dtoSeccion.getCampos().isEmpty()) {
-            Set<SeccionCampo> seccionCampos = new HashSet<>();
-
-            for (DtoCampo dtoCampo : dtoSeccion.getCampos()) {
-                SeccionCampo seccionCampo = new SeccionCampo();
-                seccionCampo.setSeccion(seccion);
-
-                // Buscar el campo en la base de datos o crear uno nuevo
-                Campo campo = daoCampo.findById(dtoCampo.getCodigo())
-                        .orElseGet(() -> {
-                            Campo nuevoCampo = new Campo();
-                            nuevoCampo.setCodigo(dtoCampo.getCodigo());
-                            nuevoCampo.setDescripcion(dtoCampo.getDescripcion());
-                            nuevoCampo.setEstado("1");
-                            nuevoCampo.setUsuarioCreacion(username);
-                            nuevoCampo.setFechaCreacion(new Date());
-
-                            return daoCampo.save(nuevoCampo);
-                        });
-
-                seccionCampo.setCampo(campo);
-                campo.getSeccionCampos().add(seccionCampo);
-                seccionCampos.add(seccionCampo);
-            }
-
-            seccion.setSeccionCampos(seccionCampos);
-        }
-
-        // Guardar la sección
+        // Primero guardamos la sección
         Seccion seccionGuardada = daoSeccion.save(seccion);
 
-        // Convertir la entidad guardada de vuelta a DTO
+        // Ya no manejamos SeccionCampo aquí, se manejará a través de su propio servicio
+
         return convertToDto(seccionGuardada);
     }
 
     @Override
     public DtoSeccion update(DtoSeccion dtoSeccion, String accessToken) {
         validateDtoSeccion(dtoSeccion);
-        Seccion seccionActual = daoSeccion.findById(dtoSeccion.getCodigo())
+        validateSeccion(dtoSeccion);
+
+        Seccion seccionActual = daoSeccion.findByCodigo(dtoSeccion.getCodigo())
                 .orElseThrow(() -> new DataValidationException("La sección con el código especificado no existe."));
 
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
+        String username = (String) userInfo.get("name");
 
-        updateEntityFromDto(seccionActual, dtoSeccion);
-        validateSeccion(seccionActual);
+        seccionActual.setDescripcion(dtoSeccion.getDescripcion());
+        seccionActual.setEstado(dtoSeccion.getEstado());
         seccionActual.setModificationDate(new Date());
-        seccionActual.setModificationUser((String) userInfo.get("name"));
+        seccionActual.setModificationUser(username);
 
         return convertToDto(daoSeccion.save(seccionActual));
-    }
-
-    @Override
-    public void delete(String codigo) {
-        validateCodigo(codigo);
-        if (!daoSeccion.existsById(codigo)) {
-            throw new DataValidationException("No se encontró una sección con el código especificado.");
-        }
-        try {
-            daoSeccion.deleteById(codigo);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar la sección con el código especificado.", e);
-        }
     }
 
     private void validateCodigo(String codigo) {
@@ -148,56 +129,53 @@ public class ServiceSeccion implements IServiceSeccion {
 
     private void validateDtoSeccion(DtoSeccion dtoSeccion) {
         if (dtoSeccion == null) {
-            throw new DataValidationException("El objeto DtoSeccion no puede ser nulo.");
+            throw new DataValidationException("DtoSeccion no puede ser nulo");
         }
         validateCodigo(dtoSeccion.getCodigo());
         if (dtoSeccion.getDescripcion() == null || dtoSeccion.getDescripcion().isEmpty()) {
-            throw new DataValidationException("La descripción de la sección no puede ser nula o vacía.");
-        }
-        if (dtoSeccion.getEstado() != null && (!dtoSeccion.getEstado().equals("1") && !dtoSeccion.getEstado().equals("0"))) {
-            throw new DataValidationException("El estado de la sección debe ser '1' (activo) o '0' (inactivo) si se proporciona.");
+            throw new DataValidationException("Descripción es requerida");
         }
     }
 
-    private void validateSeccion(Seccion seccion) {
-        if (seccion.getDescripcion() == null || seccion.getDescripcion().isEmpty()) {
-            throw new DataValidationException("La descripción de la sección no puede ser nula o vacía.");
-        }
-        if (seccion.getEstado() == null || (!seccion.getEstado().equals("1") && !seccion.getEstado().equals("0"))) {
-            throw new DataValidationException("El estado de la sección debe ser '1' (activo) o '0' (inactivo).");
+    private void validateSeccion(DtoSeccion dtoSeccion) {
+        if (dtoSeccion.getEstado() != null && !List.of("0", "1").contains(dtoSeccion.getEstado())) {
+            throw new DataValidationException("Estado debe ser '0' o '1'");
         }
     }
 
     private DtoSeccion convertToDto(Seccion seccion) {
+        if (seccion == null) {
+            return null;
+        }
         DtoSeccion dto = new DtoSeccion();
+        dto.setId(seccion.getId());
         dto.setCodigo(seccion.getCodigo());
         dto.setDescripcion(seccion.getDescripcion());
         dto.setEstado(seccion.getEstado());
-        dto.setFechaCreacion(seccion.getCreationDateA() );
+        dto.setFechaCreacion(seccion.getCreationDateA());
         dto.setUsuarioCreacion(seccion.getCreationUser());
         dto.setFechaModificacion(seccion.getModificationDate());
         dto.setUsuarioModificacion(seccion.getModificationUser());
+
+        // Convertir los proyectos
+        if (seccion.getSeccionCampos() != null) {
+            List<DtoSeccionCampo> campos = seccion.getSeccionCampos().stream()
+                    .map(ps -> {
+                        DtoSeccionCampo dtoSeccionCampo = new DtoSeccionCampo();
+                        dtoSeccionCampo.setId(ps.getId());
+                        dtoSeccionCampo.setCodigo(ps.getCodigo());
+                        dtoSeccionCampo.setFechaCreacion(ps.getFechaCreacion());
+                        dtoSeccionCampo.setUsuarioCreacion(ps.getUsuarioCreacion());
+                        dtoSeccionCampo.setFechaModificacion(ps.getFechaModificacion());
+                        dtoSeccionCampo.setUsuarioModificacion(ps.getUsuarioModificacion());
+                        dtoSeccionCampo.setCodigoCampoFk(ps.getCampo().getCodigo());
+                        dtoSeccionCampo.setCodigoSeccionFk(ps.getSeccion().getCodigo());
+                        return dtoSeccionCampo;
+                    })
+                    .collect(Collectors.toList());
+            dto.setCampos(campos);
+        }
+
         return dto;
-    }
-
-    private Seccion convertToEntity(DtoSeccion dto) {
-        Seccion seccion = new Seccion();
-        seccion.setCodigo(dto.getCodigo());
-        seccion.setDescripcion(dto.getDescripcion());
-        seccion.setEstado(dto.getEstado());
-        seccion.setCreationDateA(dto.getFechaCreacion());
-        seccion.setCreationUser(dto.getUsuarioCreacion());
-        seccion.setModificationDate(dto.getFechaModificacion());
-        seccion.setModificationUser(dto.getUsuarioModificacion());
-        return seccion;
-    }
-
-    private void updateEntityFromDto(Seccion seccion, DtoSeccion dto) {
-        if (dto.getDescripcion() != null) {
-            seccion.setDescripcion(dto.getDescripcion());
-        }
-        if (dto.getEstado() != null) {
-            seccion.setEstado(dto.getEstado());
-        }
     }
 }

@@ -1,0 +1,15 @@
+<div>
+  <ng-container *ngIf="ods; else loadingTemplate">
+    <app-generic-view
+      [title]="'Detalle ODS'"
+      [subtitle]="'Visualizando ODS: ' + (ods?.codigo || '')"
+      [icon]="'pi pi-bookmark'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

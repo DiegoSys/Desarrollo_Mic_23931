@@ -1,0 +1,22 @@
+<div class="card p-4">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0">Listado de ODS</h2>
+    <button pButton pRipple 
+            type="button" 
+            label="Nuevo ODS" 
+            icon="pi pi-plus" 
+            class="p-button-success" 
+            routerLink="new"></button>
+  </div>
+
+  <app-generic-table [data]="odsList" 
+                    [config]="tableConfig"
+                    [loading]="loading"
+                    [totalRecords]="totalRecords"
+                    (onPageChange)="loadOds($event)"
+                    (onRowSelect)="viewOds($event.codigo)">
+  </app-generic-table>
+</div>
+
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

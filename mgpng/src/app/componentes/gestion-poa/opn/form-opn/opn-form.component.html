@@ -1,0 +1,19 @@
+<p-confirmDialog [style]="{width: '500px'}" [baseZIndex]="10000"></p-confirmDialog>
+<p-toast></p-toast>
+
+<div>
+  <ng-container *ngIf="!loading; else loadingTemplate">
+    <app-generic-form
+      [title]="isEditing ? 'Editar Objetivo Nacional' : 'Nuevo Objetivo Nacional'"
+      [fields]="formFields"
+      [submitText]="isEditing ? 'Actualizar' : 'Guardar'"
+      [showCancelButton]="true"
+      (formSubmit)="onSubmit($event)"
+      (cancel)="onCancel()">
+    </app-generic-form>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner></app-spinner>
+  </ng-template>
+</div>

@@ -1,10 +1,6 @@
-
 .layout-content {
   position: relative;
-  min-height: 200px; /* Ajusta según la altura del contenido */
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
+
 
 

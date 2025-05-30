@@ -1,0 +1,17 @@
+<div>
+  <ng-container *ngIf="grupo; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Grupo'"
+      [subtitle]="'Visualizando Grupo: ' + (grupo?.codigo || '')"
+      [icon]="'pi pi-users'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+      <!-- Puedes agregar aquí contenido adicional relacionado al grupo si lo necesitas -->
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

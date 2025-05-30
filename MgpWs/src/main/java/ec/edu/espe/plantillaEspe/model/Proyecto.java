@@ -3,40 +3,51 @@ package ec.edu.espe.plantillaEspe.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "UZKTTIPOPROYEC")
+@Table(name = "UZKTPROYECTO")
 public class Proyecto {
-    private static final long serialVersionUID = 1L;
-
     @Id
-    @Column(name = "UZKTTIPOPROYEC_CODE", nullable = false, unique = true)
-    private String codigo;
-
-    @Column(name = "UZKTTIPOPROYEC_ID", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "UZKTPROYECTO_ID")
     private Long id;
 
-    @Column(name = "UZKTTIPOPROYEC_FEC_CREA")
-    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
-    @Temporal(TemporalType.DATE)
-    private Date fechaCreacion;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UZKTSUBPROGRAMA_ID")
+    private SubPrograma subprograma;
 
-    @Column(name = "UZKTTIPOPROYEC_USER_CREA")
+    @Column(name = "UZKTPROYECTO_CODE", length = 60, nullable = false)
+    private String codigo;
+
+    @Column(name = "UZKTPROYECTO_NAME", length = 360)
+    private String nombre;
+
+    @Column(name = "UZKTPROYECTO_DESC", length = 360)
+    private String descripcion;
+
+    @Column(name = "UZKTPROYECTO_STATUS", length = 6)
+    private String estado;
+
+    @Column(name = "UZKTPROYECTO_USER_CREA", length = 60)
     private String usuarioCreacion;
 
-    @Column(name = "UZKTTIPOPROYEC_FEC_MOD")
+    @Column(name = "UZKTPROYECTO_FEC_CREA")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
-    @Temporal(TemporalType.DATE)
-    private Date fechaModificacion;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaCreacion;
 
-    @Column(name = "UZKTTIPOPROYEC_USER_MOD")
+    @Column(name = "UZKTPROYECTO_USER_MOD", length = 60)
     private String usuarioModificacion;
 
-    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ProyectoSeccion> proyectoSecciones = new HashSet<>();
+    @Column(name = "UZKTPROYECTO_FEC_MOD")
+    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fechaModificacion;
+
+    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL)
+    private List<Actividad> actividades = new ArrayList<>();
 }

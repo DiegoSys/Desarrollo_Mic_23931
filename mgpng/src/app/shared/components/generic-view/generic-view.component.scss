@@ -1,0 +1,146 @@
+@import 'src/assets/layout/styles/layout/layout';
+
+.view-container {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #2e7d32;
+
+  .header-content {
+    h2 {
+      color: #2e7d32;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .view-code-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #616161;
+      font-size: 0.9rem;
+
+      i {
+        color: #2e7d32;
+      }
+    }
+  }
+
+  .header-icon i {
+    font-size: 2rem;
+    color: #2e7d32;
+  }
+}
+
+.view-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  &.cols-1 { grid-template-columns: repeat(1, 1fr); }
+  &.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  &.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  &.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .view-field {
+    margin-bottom: 1.5rem;
+
+    &.full-width {
+      grid-column: 1 / -1;
+    }
+    &.third-width {
+      grid-column: span 1;
+      @media (min-width: 768px) {
+        grid-column: span 1;
+      }
+    }
+    &.quarter-width {
+      grid-column: span 1;
+      @media (min-width: 768px) {
+        grid-column: span 1;
+      }
+    }
+
+    .view-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .view-value-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: #f9f9f9;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      min-height: 44px;
+
+      .view-icon i {
+        color: #2e7d32;
+      }
+
+      .view-value {
+        margin: 0;
+        flex: 1;
+        color: #616161;
+
+        &.multiline {
+          white-space: pre-wrap;
+          line-height: 1.5;
+        }
+
+        &.status {
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+
+        
+        }
+      }
+    }
+  }
+}
+
+.view-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+
+  .back-button {
+    border: 1px solid #2e7d32;
+    background-color: transparent;
+    color: #2e7d32;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      background-color: #2e7d32;
+      color: white;
+    }
+  }
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #616161;
+  font-style: italic;
+}

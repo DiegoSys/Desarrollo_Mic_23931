@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
 @RestController
@@ -42,6 +44,18 @@ public class SeccionController {
             return notFound(e.getMessage());
         } catch (Exception e) {
             return internalServerError("Ocurrió un error interno al buscar la sección.");
+        }
+    }
+
+    @GetMapping("list")
+    public ResponseEntity<?> findAll() {
+        try {
+            List<DtoSeccion> secciones = serviceSeccion.findAll();
+            return ResponseEntity.ok(secciones);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener las secciones.");
         }
     }
 

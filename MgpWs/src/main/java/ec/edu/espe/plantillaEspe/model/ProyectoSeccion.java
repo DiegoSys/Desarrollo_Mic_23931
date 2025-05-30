@@ -3,7 +3,6 @@ package ec.edu.espe.plantillaEspe.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
@@ -15,15 +14,16 @@ public class ProyectoSeccion {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "UZKTTIPOPROYEC_SEC_CODE", length = 60)
-    private String codigo;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTTIPOPROYEC_SEC_ID")
     private Long id;
 
+    @Column(name = "UZKTTIPOPROYEC_SEC_CODE", length = 60)
+    private String codigo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UZKTTIPOPROYEC_CODE", referencedColumnName = "UZKTTIPOPROYEC_CODE")
-    private Proyecto proyecto;
+    private TipoProyecto tipoProyecto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UZKTSECCIONES_CODE", referencedColumnName = "UZKTSECCIONES_CODE")
