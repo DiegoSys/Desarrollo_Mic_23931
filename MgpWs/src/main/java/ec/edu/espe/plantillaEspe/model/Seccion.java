@@ -1,6 +1,7 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
 import jakarta.persistence.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,28 +26,33 @@ public class Seccion {
     @Column(name = "UZKTSECCIONES_CODE", unique = true)
     private String codigo;
 
-    @Column(name = "UZKTSECCIONES_DESC", nullable = false)
+    @Column(name = "UZKTSECCIONES_NOMBRE")
+    private String nombre;
+
+    @Column(name = "UZKTSECCIONES_DESC")
     private String descripcion;
 
-    @Column(name = "UZKTSECCIONES_STATUS", length = 6)
-    private String estado;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTSECCIONES_STATUS")
+    private Estado estado;
 
     @Column(name = "UZKTSECCIONES_FEC_CREA")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.DATE)
-    private Date creationDateA;
+    private Date fechaCreacion;
 
     @Column(name = "UZKTSECCIONES_USER_CREA")
-    private String creationUser;
+    private String usuarioCreacion;
 
     @Column(name = "UZKTSECCIONES_FEC_MOD")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.DATE)
-    private Date modificationDate;
+    private Date fechaModificacion;
 
     @Column(name = "UZKTSECCIONES_USER_MOD")
-    private String modificationUser;
+    private String usuarioModificacion;
 
+    @ToString.Exclude  // Excluir del toString para evitar recursión
     @OneToMany(mappedBy = "seccion", fetch = FetchType.LAZY)
     List<SeccionCampo> seccionCampos;
 

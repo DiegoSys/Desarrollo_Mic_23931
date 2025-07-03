@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de objetivos estratégicos.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar objetivos estratégicos,
+ * así como para obtener listados y paginación de objetivos.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/objestrategico")
@@ -29,6 +39,12 @@ public class ObjEstrategicoController {
         this.serviceObjEstrategico = serviceObjEstrategico;
     }
 
+    /**
+     * Obtiene un objetivo estratégico por su código.
+     *
+     * @param codigo Código del objetivo estratégico.
+     * @return El objetivo encontrado o un error si no existe.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,6 +63,11 @@ public class ObjEstrategicoController {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los objetivos estratégicos activos.
+     *
+     * @return Lista de objetivos estratégicos activos.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
@@ -59,12 +80,23 @@ public class ObjEstrategicoController {
         }
     }
 
+    /**
+     * Obtiene una página de objetivos estratégicos activos, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de objetivos estratégicos activos.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -75,9 +107,15 @@ public class ObjEstrategicoController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoObjEstrategico> objEstrategicos = serviceObjEstrategico.findAllActivos(pageable);
+            Page<DtoObjEstrategico> objEstrategicos = serviceObjEstrategico.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(objEstrategicos);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +124,13 @@ public class ObjEstrategicoController {
         }
     }
 
+    /**
+     * Crea un nuevo objetivo estratégico.
+     *
+     * @param objEstrategico Datos del objetivo estratégico.
+     * @param authHeader     Cabecera de autorización.
+     * @return Objetivo estratégico creado.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoObjEstrategico objEstrategico,
@@ -101,6 +146,14 @@ public class ObjEstrategicoController {
         }
     }
 
+    /**
+     * Actualiza un objetivo estratégico existente.
+     *
+     * @param codigo         Código del objetivo estratégico.
+     * @param objEstrategico Datos del objetivo estratégico.
+     * @param authHeader     Cabecera de autorización.
+     * @return Objetivo estratégico actualizado.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +173,13 @@ public class ObjEstrategicoController {
         }
     }
 
+    /**
+     * Elimina un objetivo estratégico por su código.
+     *
+     * @param codigo     Código del objetivo estratégico.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta sin contenido si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
             @PathVariable String codigo,
@@ -130,7 +190,6 @@ public class ObjEstrategicoController {
 
         try {
             String token = extractToken(authHeader);
-
             serviceObjEstrategico.delete(codigo, token);
             return ResponseEntity.noContent().build();
         } catch (DataValidationException e) {

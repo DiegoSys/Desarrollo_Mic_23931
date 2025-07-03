@@ -79,14 +79,25 @@ public class ServiceObjEstrategico implements IServiceObjEstrategico {
     }
 
     @Override
-    public Page<DtoObjEstrategico> findAllActivos(Pageable pageable) {
+    public Page<DtoObjEstrategico> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoObjEstrategico.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los Objetivos Estratégicos paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoObjEstrategico.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los Objetivos Estratégicos paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoObjEstrategico> objetivos = daoObjEstrategico.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(objetivos, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los Objetivos Estratégicos activos.", e);
+            }
         }
     }
 

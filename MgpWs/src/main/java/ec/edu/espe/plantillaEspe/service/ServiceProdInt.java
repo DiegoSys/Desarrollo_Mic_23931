@@ -79,14 +79,25 @@ public class ServiceProdInt implements IServiceProdInt {
     }
 
     @Override
-    public Page<DtoProdInt> findAllActivos(Pageable pageable) {
+    public Page<DtoProdInt> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoProdInt.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los Productos Institucionales paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoProdInt.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los Productos Institucionales paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoProdInt> productos = daoProdInt.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(productos, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los Productos Institucionales activos.", e);
+            }
         }
     }
 

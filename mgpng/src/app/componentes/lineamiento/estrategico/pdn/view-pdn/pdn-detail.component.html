@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="pdn; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Política del PDN'"
+      [subtitle]="'Visualizando Política del PDN: ' + (pdn?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

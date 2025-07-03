@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 
 export interface ViewField {
   // Identificador único del campo
@@ -53,6 +53,14 @@ export class GenericViewComponent implements OnInit {
   @Input() loading: boolean = false;
   @Input() backRoute: string = '';
   @Input() customActions: any[] = [];
+  /**
+     * Evento emitido al cancelar.
+     */
+  @Output() cancel = new EventEmitter<void>();
+  /**
+   * Mostrar o no el botón de cancelar.
+   */
+  @Input() showCancelButton: boolean = false;
 
   constructor() { }
 

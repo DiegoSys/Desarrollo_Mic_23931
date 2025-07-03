@@ -1,0 +1,88 @@
+.wizard-step {
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.07);
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &.active {
+    border-left: 5px solid #28a745;
+    box-shadow: 0 4px 16px rgba(40, 167, 69, 0.12);
+    background: #f6fcf7;
+  }
+
+  &.completed .step-header {
+    color: #28a745;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.1rem 1.5rem;
+    border-radius: 8px 8px 0 0;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f8f9fa;
+    }
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 50%;
+    background: #eaf7ef;
+    color: #28a745;
+    font-weight: 600;
+    font-size: 1.15rem;
+    border: 2px solid #c3e6cb;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+
+    .step-check {
+      color: #fff;
+      background: #28a745;
+      border-radius: 50%;
+      width: 1.6rem;
+      height: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin: 0 auto;
+    }
+  }
+
+  &.active .step-number {
+    background: #28a745;
+    color: #fff;
+    border-color: #28a745;
+  }
+
+  &.completed .step-number {
+    background: #28a745;
+    color: #fff;
+    border-color: #28a745;
+  }
+
+  .step-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: 0.01em;
+    flex: 1;
+  }
+
+  .step-content {
+    padding: 1.2rem 1.5rem;
+    background: #fcfcfc;
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid #e0e0e0;
+  }
+}

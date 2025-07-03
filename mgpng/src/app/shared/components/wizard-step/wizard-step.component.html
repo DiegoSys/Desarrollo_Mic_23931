@@ -1,0 +1,12 @@
+<div class="wizard-step" [class.active]="isActive" [class.completed]="isCompleted">
+  <div class="step-header" (click)="selectStep()" tabindex="0" [attr.aria-current]="isActive ? 'step' : null">
+    <div class="step-number">
+      <span *ngIf="!isCompleted">{{ index + 1 }}</span>
+      <i *ngIf="isCompleted" class="pi pi-check step-check"></i>
+    </div>
+    <div class="step-title">{{ title }}</div>
+  </div>
+  <div class="step-content" *ngIf="isActive">
+    <ng-content></ng-content>
+  </div>
+</div>

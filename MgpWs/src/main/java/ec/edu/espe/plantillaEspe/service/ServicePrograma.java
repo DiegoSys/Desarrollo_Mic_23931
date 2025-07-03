@@ -5,6 +5,8 @@ import ec.edu.espe.plantillaEspe.dao.DaoPrograma;
 import ec.edu.espe.plantillaEspe.dao.DaoSubPrograma;
 import ec.edu.espe.plantillaEspe.dto.DtoPrograma;
 import ec.edu.espe.plantillaEspe.dto.DtoSubPrograma;
+import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import ec.edu.espe.plantillaEspe.exception.DataValidationException;
 import ec.edu.espe.plantillaEspe.model.Programa;
 import ec.edu.espe.plantillaEspe.model.SubPrograma;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,19 +29,30 @@ public class ServicePrograma implements IServicePrograma {
     private final DaoPrograma daoPrograma;
     private final UserInfoService userInfoService;
     private final DaoSubPrograma daoSubPrograma;
+    private final ServiceSubPrograma serviceSubPrograma;
 
     @Autowired
     public ServicePrograma(DaoPrograma daoPrograma,
                           UserInfoService userInfoService,
-                          DaoSubPrograma daoSubPrograma) {
-        this.daoSubPrograma = daoSubPrograma;
+                          DaoSubPrograma daoSubPrograma,
+                          ServiceSubPrograma serviceSubPrograma) {
         this.daoPrograma = daoPrograma;
         this.userInfoService = userInfoService;
+        this.daoSubPrograma = daoSubPrograma;
+        this.serviceSubPrograma = serviceSubPrograma;
     }
 
     @Override
-    public DtoPrograma find(String codigo) {
-        validateCodigo(codigo);
+    public DtoPrograma find(Long id) {
+        if (id == null) throw new DataValidationException("El id del programa no puede ser nulo.");
+        return daoPrograma.findById(id)
+                .map(this::convertToDto)
+                .orElseThrow(() -> new DataValidationException("No se encontró un programa con el id especificado."));
+    }
+
+    @Override
+    public DtoPrograma findByCodigo(String codigo) {
+        if (codigo == null || codigo.isEmpty()) throw new DataValidationException("El código no puede ser nulo o vacío.");
         return daoPrograma.findByCodigo(codigo)
                 .map(this::convertToDto)
                 .orElseThrow(() -> new DataValidationException("No se encontró un programa con el código especificado."));
@@ -46,34 +60,75 @@ public class ServicePrograma implements IServicePrograma {
 
     @Override
     public List<DtoPrograma> findAll() {
-        try {
-            return daoPrograma.findAll().stream()
-                    .map(this::convertToDto)
-                    .toList();
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener todos los programas.", e);
-        }
+        return daoPrograma.findAll().stream()
+                .map(this::convertToDto)
+                .toList();
+    }
+
+    @Override
+    public List<DtoPrograma> findAllActivos() {
+        return daoPrograma.findByEstado(Estado.A).stream()
+                .map(this::convertToDto)
+                .toList();
     }
 
     @Override
     public Page<DtoPrograma> findAll(Pageable pageable) {
-        if (pageable == null) {
-            throw new DataValidationException("Los parámetros de paginación son requeridos.");
-        }
-        try {
-            return daoPrograma.findAll(pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los programas paginados.", e);
+        if (pageable == null) throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        return daoPrograma.findAll(pageable).map(this::convertToDto);
+    }
+
+    @Override
+    public Page<DtoPrograma> findAllActivos(Pageable pageable) {
+        if (pageable == null) throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        return daoPrograma.findByEstado(Estado.A, pageable).map(this::convertToDto);
+    }
+
+    @Override
+    public Page<DtoPrograma> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
+        if (pageable == null) throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            return daoPrograma.findByEstado(Estado.A, pageable).map(this::convertToDto);
+        } else {
+            List<DtoPrograma> programas = daoPrograma.findByEstado(Estado.A).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(programas, searchCriteria, pageable);
         }
     }
 
     @Override
     @Transactional
     public DtoPrograma save(DtoPrograma dtoPrograma, String accessToken) {
-        validarNuevoPrograma(dtoPrograma);
-        String username = obtenerNombreUsuario(accessToken);
+        validateDtoPrograma(dtoPrograma);
 
-        Programa programa = crearPrograma(dtoPrograma, username);
+        Optional<Programa> existente = daoPrograma.findByCodigo(dtoPrograma.getCodigo());
+        Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
+        String username = (String) userInfo.get("name");
+
+        if (existente.isPresent()) {
+            Programa programa = existente.get();
+            if (Estado.A.equals(programa.getEstado())) {
+                throw new DataValidationException("Ya existe un programa activo con el código especificado.");
+            }
+            programa.setEstado(Estado.A);
+            programa.setDescripcion(dtoPrograma.getDescripcion());
+            programa.setNombre(dtoPrograma.getNombre());
+            programa.setFechaCreacion(new Date());
+            programa.setUsuarioCreacion(username);
+            programa.setAlineacion(TipoAlineacion.OPERATIVA);
+            vincularSubProgramas(programa, dtoPrograma.getSubProgramaList(), username);
+            return convertToDto(daoPrograma.save(programa));
+        }
+
+        Programa programa = new Programa();
+        programa.setCodigo(dtoPrograma.getCodigo());
+        programa.setFechaCreacion(new Date());
+        programa.setUsuarioCreacion(username);
+        programa.setEstado(Estado.A);
+        programa.setAlineacion(TipoAlineacion.OPERATIVA);
+        programa.setDescripcion(dtoPrograma.getDescripcion());
+        programa.setNombre(dtoPrograma.getNombre());
         vincularSubProgramas(programa, dtoPrograma.getSubProgramaList(), username);
 
         return convertToDto(daoPrograma.save(programa));
@@ -82,139 +137,49 @@ public class ServicePrograma implements IServicePrograma {
     @Override
     @Transactional
     public DtoPrograma update(DtoPrograma dtoPrograma, String accessToken) {
-        if (dtoPrograma.getCodigo() == null || dtoPrograma.getCodigo().isEmpty()) {
-            throw new DataValidationException("El código del programa no puede ser nulo o vacío.");
+        validateDtoPrograma(dtoPrograma);
+
+        Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
+        String username = (String) userInfo.get("name");
+
+        Programa programa = daoPrograma.findById(dtoPrograma.getId())
+                .orElseThrow(() -> new DataValidationException("El programa con el id especificado no existe."));
+
+        if (Estado.I.equals(dtoPrograma.getEstado()) && Estado.A.equals(programa.getEstado())) {
+            throw new DataValidationException("Para desactivar un programa use el método delete()");
         }
 
-        validateDtoPrograma(dtoPrograma);
-        String username = obtenerNombreUsuario(accessToken);
-
-        Programa programa = obtenerProgramaExistente(dtoPrograma.getCodigo());
-        actualizarDatosBasicos(programa, dtoPrograma, username);
+        programa.setFechaModificacion(new Date());
+        programa.setUsuarioModificacion(username);
+        programa.setEstado(Estado.A);
+        programa.setAlineacion(TipoAlineacion.OPERATIVA);
+        programa.setDescripcion(dtoPrograma.getDescripcion());
+        programa.setNombre(dtoPrograma.getNombre());
         actualizarSubProgramasAsociados(programa, dtoPrograma.getSubProgramaList(), username);
 
         return convertToDto(daoPrograma.save(programa));
     }
 
-    private void validarNuevoPrograma(DtoPrograma dtoPrograma) {
-        validateDtoPrograma(dtoPrograma);
-        if (daoPrograma.findByCodigo(dtoPrograma.getCodigo()).isPresent()) {
-            throw new DataValidationException("Ya existe un programa con el código especificado.");
-        }
-    }
-
-    private String obtenerNombreUsuario(String accessToken) {
-        Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
-        return (String) userInfo.get("name");
-    }
-
-    private Programa crearPrograma(DtoPrograma dto, String username) {
-        Programa programa = new Programa();
-        programa.setCodigo(dto.getCodigo());
-        programa.setFechaCreacion(new Date());
-        programa.setUsuarioCreacion(username);
-        programa.setEstado(dto.getEstado());
-        programa.setDescripcion(dto.getDescripcion());
-        programa.setNombre(dto.getNombre());
-        return programa;
-    }
-
-    private void vincularSubProgramas(Programa programa, List<DtoSubPrograma> dtosSubPrograma, String username) {
-        List<SubPrograma> subProgramas = obtenerSubProgramasExistentes(dtosSubPrograma);
-        actualizarReferenciasSubProgramas(subProgramas, programa, username);
-        programa.setSubProgramas(subProgramas);
-    }
-
-    private List<SubPrograma> obtenerSubProgramasExistentes(List<DtoSubPrograma> dtosSubPrograma) {
-        return dtosSubPrograma.stream()
-                .map(dto -> daoSubPrograma.findByCodigo(dto.getCodigo())
-                        .orElseThrow(() -> new DataValidationException(
-                                "No se encontró un subprograma con el código especificado.")))
-                .collect(Collectors.toList());
-    }
-
-    private Programa obtenerProgramaExistente(String codigo) {
-        return daoPrograma.findByCodigo(codigo)
-                .orElseThrow(() -> new DataValidationException(
-                        "El programa con el código especificado no existe."));
-    }
-
-    private void actualizarDatosBasicos(Programa programa,
-                                      DtoPrograma dto,
-                                      String username) {
-        programa.setFechaModificacion(new Date());
-        programa.setUsuarioModificacion(username);
-        programa.setEstado(dto.getEstado());
-        programa.setDescripcion(dto.getDescripcion());
-        programa.setNombre(dto.getNombre());
-    }
-
-    private void actualizarSubProgramasAsociados(Programa programa,
-                                               List<DtoSubPrograma> nuevosSubProgramas,
-                                               String username) {
-        List<SubPrograma> subProgramasActualizados = obtenerSubProgramasExistentes(nuevosSubProgramas);
-        actualizarReferenciasSubProgramas(subProgramasActualizados, programa, username);
-        desvincularSubProgramasEliminados(programa.getSubProgramas(), subProgramasActualizados, username);
-        programa.setSubProgramas(subProgramasActualizados);
-    }
-
-    private void actualizarReferenciasSubProgramas(List<SubPrograma> subProgramas,
-                                                 Programa programa,
-                                                 String username) {
-        for (SubPrograma subPrograma : subProgramas) {
-            subPrograma.setPrograma(programa);
-            subPrograma.setFechaModificacion(new Date());
-            subPrograma.setUsuarioModificacion(username);
-            daoSubPrograma.save(subPrograma);
-        }
-    }
-
-    private void desvincularSubProgramasEliminados(List<SubPrograma> subProgramasActuales,
-                                                 List<SubPrograma> subProgramasNuevos,
-                                                 String username) {
-        for (SubPrograma subProgramaActual : subProgramasActuales) {
-            if (subProgramaDebeSerDesvinculado(subProgramaActual, subProgramasNuevos)) {
-                desvincularSubPrograma(subProgramaActual, username);
-            }
-        }
-    }
-
-    private boolean subProgramaDebeSerDesvinculado(SubPrograma subProgramaActual, List<SubPrograma> subProgramasNuevos) {
-        return subProgramasNuevos.stream()
-                .noneMatch(subProgramaNuevo -> subProgramaNuevo.getCodigo().equals(subProgramaActual.getCodigo()));
-    }
-
-    private void desvincularSubPrograma(SubPrograma subPrograma, String username) {
-        subPrograma.setPrograma(null);
-        subPrograma.setFechaModificacion(new Date());
-        subPrograma.setUsuarioModificacion(username);
-        daoSubPrograma.save(subPrograma);
-    }
-
     @Override
     @Transactional
-    public void delete(String codigo) {
-        validateCodigo(codigo);
-        Programa programa = daoPrograma.findByCodigo(codigo)
-                .orElseThrow(() -> new DataValidationException("No se encontró un programa con el código especificado."));
+    public void delete(Long id, String accessToken) {
+        if (id == null) throw new DataValidationException("El id del programa no puede ser nulo.");
+        Programa programa = daoPrograma.findById(id)
+                .orElseThrow(() -> new DataValidationException("No se encontró un programa con el id especificado."));
 
-        try {
-            daoPrograma.delete(programa);
-            List<SubPrograma> subProgramaList = programa.getSubProgramas();
-            for (SubPrograma subPrograma : subProgramaList) {
-                subPrograma.setPrograma(null);
-                subPrograma.setFechaModificacion(new Date());
-                subPrograma.setUsuarioModificacion(programa.getUsuarioModificacion());
-                daoSubPrograma.save(subPrograma);
+        Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
+        String username = (String) userInfo.get("name");
+
+        programa.setUsuarioModificacion(username);
+        programa.setEstado(Estado.I);
+        programa.setFechaModificacion(new Date());
+        daoPrograma.save(programa);
+
+        // Desvincular subprogramas asociados
+        if (programa.getSubProgramas() != null) {
+            for (SubPrograma subPrograma : programa.getSubProgramas()) {
+                serviceSubPrograma.delete(subPrograma.getId(), accessToken);
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error al eliminar el programa.", e);
-        }
-    }
-
-    private void validateCodigo(String codigo) {
-        if (codigo == null || codigo.isEmpty()) {
-            throw new DataValidationException("El código del programa no puede ser nulo o vacío.");
         }
     }
 
@@ -222,7 +187,80 @@ public class ServicePrograma implements IServicePrograma {
         if (dtoPrograma == null) {
             throw new DataValidationException("DtoPrograma no puede ser nulo.");
         }
-        validateCodigo(dtoPrograma.getCodigo());
+        if (dtoPrograma.getCodigo() == null || dtoPrograma.getCodigo().isEmpty()) {
+            throw new DataValidationException("El código del programa no puede ser nulo o vacío.");
+        }
+        if (dtoPrograma.getDescripcion() == null || dtoPrograma.getDescripcion().isEmpty()) {
+            throw new DataValidationException("Descripción es requerida.");
+        }
+        if (dtoPrograma.getNombre() == null || dtoPrograma.getNombre().isEmpty()) {
+            throw new DataValidationException("Nombre es requerido.");
+        }
+    }
+
+    private void vincularSubProgramas(Programa programa, List<DtoSubPrograma> dtosSubPrograma, String username) {
+        List<SubPrograma> subProgramas = obtenerSubProgramasExistentes(dtosSubPrograma, programa);
+        actualizarReferenciasSubProgramas(subProgramas, programa, username);
+        programa.setSubProgramas(subProgramas);
+    }
+
+    private List<SubPrograma> obtenerSubProgramasExistentes(List<DtoSubPrograma> dtosSubPrograma, Programa programa) {
+        if (dtosSubPrograma == null) return List.of();
+        return dtosSubPrograma.stream()
+                .map(dto -> {
+                    if (dto.getId() != null) {
+                        return daoSubPrograma.findById(dto.getId())
+                                .orElseThrow(() -> new DataValidationException(
+                                        "No se encontró un subprograma con el id especificado: " + dto.getId()));
+                    } else {
+                        SubPrograma nuevo = new SubPrograma();
+                        nuevo.setCodigo(dto.getCodigo());
+                        nuevo.setDescripcion(dto.getDescripcion());
+                        nuevo.setNombre(dto.getNombre());
+                        nuevo.setEstado(dto.getEstado() != null ? dto.getEstado() : Estado.A);
+                        nuevo.setAlineacion(dto.getAlineacion() != null ? dto.getAlineacion() : TipoAlineacion.OPERATIVA);
+                        nuevo.setPrograma(programa);
+                        nuevo.setFechaCreacion(new Date());
+                        nuevo.setUsuarioCreacion("system");
+                        return daoSubPrograma.save(nuevo);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private void actualizarSubProgramasAsociados(Programa programa,
+                                                 List<DtoSubPrograma> nuevosSubProgramas,
+                                                 String username) {
+        List<SubPrograma> subProgramasActualizados = obtenerSubProgramasExistentes(nuevosSubProgramas, programa);
+        actualizarReferenciasSubProgramas(subProgramasActualizados, programa, username);
+        desvincularSubProgramasEliminados(programa.getSubProgramas(), subProgramasActualizados, username);
+        programa.setSubProgramas(subProgramasActualizados);
+    }
+
+    private void actualizarReferenciasSubProgramas(List<SubPrograma> subProgramas,
+                                                   Programa programa,
+                                                   String username) {
+        for (SubPrograma subPrograma : subProgramas) {
+            subPrograma.setPrograma(programa);
+            subPrograma.setFechaModificacion(new Date());
+            subPrograma.setEstado(Estado.A);
+            subPrograma.setUsuarioModificacion(username);
+            daoSubPrograma.save(subPrograma);
+        }
+    }
+
+    private void desvincularSubProgramasEliminados(List<SubPrograma> subProgramasActuales,
+                                                   List<SubPrograma> subProgramasNuevos,
+                                                   String username) {
+        if (subProgramasActuales == null) return;
+        for (SubPrograma subProgramaActual : subProgramasActuales) {
+            if (subProgramasNuevos.stream().noneMatch(sp -> sp.getId().equals(subProgramaActual.getId()))) {
+                subProgramaActual.setPrograma(null);
+                subProgramaActual.setFechaModificacion(new Date());
+                subProgramaActual.setUsuarioModificacion(username);
+                daoSubPrograma.save(subProgramaActual);
+            }
+        }
     }
 
     private DtoPrograma convertToDto(Programa programa) {
@@ -237,6 +275,7 @@ public class ServicePrograma implements IServicePrograma {
         dto.setFechaModificacion(programa.getFechaModificacion());
         dto.setUsuarioModificacion(programa.getUsuarioModificacion());
         dto.setEstado(programa.getEstado());
+        dto.setAlineacion(programa.getAlineacion());
         dto.setDescripcion(programa.getDescripcion());
         dto.setNombre(programa.getNombre());
 
@@ -253,7 +292,8 @@ public class ServicePrograma implements IServicePrograma {
                         dtoSubPrograma.setEstado(sp.getEstado());
                         dtoSubPrograma.setDescripcion(sp.getDescripcion());
                         dtoSubPrograma.setNombre(sp.getNombre());
-                        
+                        dtoSubPrograma.setAlineacion(sp.getAlineacion());
+                        dtoSubPrograma.setProgramaId(programa.getId());
                         return dtoSubPrograma;
                     })
                     .collect(Collectors.toList());

@@ -1,0 +1,76 @@
+<div class="selector-table-container">
+  <div class="selector-toolbar">
+    <span class="search-wrapper">
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="searchValue"
+        placeholder="Buscar..."
+        (ngModelChange)="onSearchInputChange($event)"
+        class="selector-search-input"
+        autocomplete="off"
+      />
+      <button
+        type="button"
+        (click)="handleSearch()"
+        class="p-button-sm selector-search-btn"
+        aria-label="Buscar"
+      >
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <circle cx="9" cy="9" r="7" stroke="#fff" stroke-width="2"/>
+          <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </span>
+  </div>
+  <div style="min-height: 120px; position: relative;">
+    <div *ngIf="loading" class="simple-spinner-container" style="position: absolute; inset: 0; z-index: 2; background: rgba(255,255,255,0.7);">
+      <div class="simple-spinner"></div>
+    </div>
+    <ng-container *ngIf="!loading">
+      <ng-container *ngIf="items?.length; else noData">
+        <div class="selector-options-columns">
+          <ul class="selector-options-list">
+            <li *ngFor="let item of items.slice(0,5)" class="selector-option-item">
+              <label>
+                <input
+                  type="radio"
+                  name="selectorOption"
+                  [checked]="isSelected(item)"
+                  (change)="toggleSelection(item)"
+                />
+                <span class="selector-label">{{ item[labelField] }}</span>
+                <span *ngIf="descField && item[descField]" class="selector-desc">- {{ item[descField] }}</span>
+              </label>
+            </li>
+          </ul>
+          <ul class="selector-options-list">
+            <li *ngFor="let item of items.slice(5,10)" class="selector-option-item">
+              <label>
+                <input
+                  type="radio"
+                  name="selectorOption"
+                  [checked]="isSelected(item)"
+                  (change)="toggleSelection(item)"
+                />
+                <span class="selector-label">{{ item[labelField] }}</span>
+                <span *ngIf="descField && item[descField]" class="selector-desc">- {{ item[descField] }}</span>
+              </label>
+            </li>
+          </ul>
+        </div>      </ng-container>
+      <ng-template #noData>
+        <div class="selector-no-data" style="display: flex; align-items: center; justify-content: center; height: 100px;">
+          <span>No hay datos para mostrar.</span>
+        </div>
+      </ng-template>
+    </ng-container>
+  </div>
+  <p-paginator
+    [rows]="size"
+    [totalRecords]="totalRecords"
+    [first]="page * size"
+    (onPageChange)="handlePageChange($event)"
+    styleClass="paginator-compact">
+  </p-paginator>
+</div>

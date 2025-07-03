@@ -1,0 +1,19 @@
+<div>
+  <ng-container *ngIf="naturaleza; else loadingTemplate">
+    <app-generic-view [loading]="loading" [title]="'Detalle Naturaleza'"
+      [subtitle]="'Visualizando Naturaleza: ' + (naturaleza?.codigo || '')" [icon]="'pi pi-leaf'" [fields]="viewFields"
+      [backRoute]="'../'">
+
+      <!---Agregar un espacio nada mas-->
+      <hr style="border: none; border-top: 2px solid #2e7d32; margin: 1.5rem 0;">
+      
+      <!-- Cambia la tabla por el componente de lista y pásale el código -->
+      <app-grupo-list [codigoNaturaleza]="naturaleza?.codigo"></app-grupo-list>
+
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

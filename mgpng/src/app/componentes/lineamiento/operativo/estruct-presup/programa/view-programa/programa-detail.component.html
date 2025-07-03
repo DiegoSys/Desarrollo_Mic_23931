@@ -1,0 +1,23 @@
+<div>
+  <ng-container *ngIf="programa; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Programa'"
+      [subtitle]="'Visualizando Programa: ' + (programa?.codigo || '')"
+      [icon]="'pi pi-briefcase'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+
+      <!-- Espacio visual -->
+      <hr style="border: none; border-top: 2px solid #2e7d32; margin: 1.5rem 0;">
+
+      <!-- Pasa el id del programa, no el código -->
+      <app-subprograma-list [codigoPrograma]="programa?.id"></app-subprograma-list>
+
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

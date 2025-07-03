@@ -79,14 +79,25 @@ public class ServiceProgInst implements IServiceProgInst {
     }
 
     @Override
-    public Page<DtoProgInst> findAllActivos(Pageable pageable) {
+    public Page<DtoProgInst> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoProgInst.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los programas institucionales paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoProgInst.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los programas institucionales paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoProgInst> programas = daoProgInst.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(programas, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los programas institucionales activos.", e);
+            }
         }
     }
 

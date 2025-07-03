@@ -47,7 +47,7 @@ public class ProyectoSeccionController {
         }
     }
 
-    @GetMapping("list")
+    @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
             List<DtoProyectoSeccion> proyectoSecciones = serviceProyectoSeccion.findAll();
@@ -86,6 +86,48 @@ public class ProyectoSeccionController {
         }
     }
 
+    /**
+     * Obtiene todas las secciones de un proyecto específico con paginación.
+     *
+     * @param codigoProyecto Código del proyecto.
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @return Página de secciones del proyecto.
+     */
+    @GetMapping("/proyecto/{codigoProyecto}")
+    public ResponseEntity<?> findByCodigoProyecto(
+            @PathVariable String codigoProyecto,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orden") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        if (codigoProyecto == null || codigoProyecto.isEmpty()) {
+            return badRequest("El código del proyecto no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoProyectoSeccion> proyectoSecciones = serviceProyectoSeccion.findByCodigoProyecto(codigoProyecto, pageable);
+            return ResponseEntity.ok(proyectoSecciones);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener las secciones del proyecto paginadas.");
+        }
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoProyectoSeccion proyectoSeccion,
@@ -97,7 +139,7 @@ public class ProyectoSeccionController {
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
         } catch (Exception e) {
-            return internalServerError("Ocurrió un error interno al crear la relación proyecto-sección."+e);
+            return internalServerError("Ocurrió un error interno al crear la relación proyecto-sección." + e);
         }
     }
 

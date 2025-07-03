@@ -1,21 +1,39 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "UZKTACTIVIDAD")
+@Table(
+    name = "UZKTACTIVIDAD",
+    uniqueConstraints = @UniqueConstraint(columnNames = {
+        "UZKTACTIVIDAD_CODE",
+        "UZKTPROYECTO_ID",
+        "UZKTSUBPROGRAMA_ID",
+        "UZKTPROGRAMA_ID"
+    })
+)
 public class Actividad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTACTIVIDAD_ID")
     private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UZKTPROGRAMA_ID", referencedColumnName = "UZKTPROGRAMA_ID", nullable = false)
+    private Programa programa;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UZKTPROYECTO_ID")
+    @JoinColumn(name = "UZKTSUBPROGRAMA_ID", referencedColumnName = "UZKTSUBPROGRAMA_ID", nullable = false)
+    private SubPrograma subprograma;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UZKTPROYECTO_ID", referencedColumnName = "UZKTPROYECTO_ID", nullable = false)
     private Proyecto proyecto;
 
     @Column(name = "UZKTACTIVIDAD_CODE", length = 60, nullable = false)
@@ -28,7 +46,11 @@ public class Actividad {
     private String descripcion;
 
     @Column(name = "UZKTACTIVIDAD_STATUS", length = 6)
-    private String estado;
+    private Estado estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTACTIVIDAD_ALINEACION")
+    private TipoAlineacion alineacion;
 
     @Column(name = "UZKTACTIVIDAD_USER_CREA", length = 60)
     private String usuarioCreacion;

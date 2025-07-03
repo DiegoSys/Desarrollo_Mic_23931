@@ -12,12 +12,13 @@
     </div>
   </div>
 
+
   <div [class.view-grid]="layout === 'grid'" 
        [class.view-list]="layout === 'list'"
        [style.grid-template-columns]="'repeat(' + gridColumns + ', 1fr)'"
        *ngIf="!loading; else loadingTemplate">
     <div class="view-field" *ngFor="let field of fields"
-         [class.full-width]="field.width === 'full'"
+         [class.full-width]="field.width === 'full' || field.label?.toLowerCase() === 'código'"
          [class.third-width]="field.width === 'third'"
          [class.quarter-width]="field.width === 'quarter'"
          [class]="field.cssClass">
@@ -56,29 +57,43 @@
     </div>
   </div>
 
-  <!-- Aquí permites contenido personalizado como la tabla de grupos -->
   <ng-content></ng-content>
 
   <ng-template #loadingTemplate>
     <app-spinner></app-spinner>
   </ng-template>
 
-  <div class="view-actions">
-    <button pButton type="button" class="p-button-outlined back-button" 
-            [routerLink]="backRoute">
-      <i class="pi pi-arrow-left"></i>
-      <span>Volver</span>
-    </button>
-    
-    <ng-container *ngFor="let action of customActions">
-      <button pButton 
-              [type]="action.type || 'button'"
-              [icon]="action.icon"
-              [label]="action.label"
-              [class]="action.class || 'p-button-secondary'"
-              (click)="action.handler()"
-              *ngIf="action.visible !== false">
+    <div class="view-actions">
+      <!-- Botón volver por ruta o por evento, mismo diseño -->
+      <button
+        pButton
+        type="button"
+        class="p-button-outlined back-button"
+        *ngIf="!showCancelButton"
+        [routerLink]="backRoute">
+        <i class="pi pi-arrow-left"></i>
+        <span>Volver</span>
       </button>
-    </ng-container>
-  </div>
+    
+      <button
+        pButton
+        type="button"
+        class="p-button-outlined back-button"
+        *ngIf="showCancelButton"
+        (click)="cancel.emit()">
+        <i class="pi pi-arrow-left"></i>
+        <span>Volver</span>
+      </button>
+    
+      <ng-container *ngFor="let action of customActions">
+        <button pButton 
+                [type]="action.type || 'button'"
+                [icon]="action.icon"
+                [label]="action.label"
+                [class]="action.class || 'p-button-secondary'"
+                (click)="action.handler()"
+                *ngIf="action.visible !== false">
+        </button>
+      </ng-container>
+    </div>
 </div>

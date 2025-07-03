@@ -1,12 +1,15 @@
 package ec.edu.espe.plantillaEspe.service;
 
 import ec.edu.espe.plantillaEspe.config.security.UserInfoService;
+import ec.edu.espe.plantillaEspe.dao.DaoPresGrupo;
 import ec.edu.espe.plantillaEspe.dao.DaoPresItem;
 import ec.edu.espe.plantillaEspe.dao.DaoPresSubgrupo;
 import ec.edu.espe.plantillaEspe.dto.DtoPresItem;
 import ec.edu.espe.plantillaEspe.dto.DtoPresSubgrupo;
 import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import ec.edu.espe.plantillaEspe.exception.DataValidationException;
+import ec.edu.espe.plantillaEspe.model.PresGrupo;
 import ec.edu.espe.plantillaEspe.model.PresItem;
 import ec.edu.espe.plantillaEspe.model.PresSubgrupo;
 import ec.edu.espe.plantillaEspe.service.IService.IServicePresSubgrupo;
@@ -28,14 +31,20 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
     private final DaoPresSubgrupo daoPresSubgrupo;
     private final UserInfoService userInfoService;
     private final DaoPresItem daoPresItem;
+    private final DaoPresGrupo daoPresGrupo;
+    private final ServicePresItem servicePresItem;
 
     @Autowired
     public ServicePresSubgrupo(DaoPresSubgrupo daoPresSubgrupo,
                               UserInfoService userInfoService,
-                              DaoPresItem daoPresItem) {
+                              DaoPresItem daoPresItem,
+                              DaoPresGrupo daoPresGrupo,
+                              ServicePresItem servicePresItem) {
         this.daoPresSubgrupo = daoPresSubgrupo;
         this.userInfoService = userInfoService;
         this.daoPresItem = daoPresItem;
+        this.daoPresGrupo = daoPresGrupo;
+        this.servicePresItem = servicePresItem;
     }
 
     @Override
@@ -93,6 +102,23 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
     }
 
     @Override
+    public Page<DtoPresSubgrupo> findByPresGrupo_Codigo(String codigo, Pageable pageable, Map<String, String> searchCriteria) {
+        validateCodigo(codigo);
+        if (pageable == null) {
+            throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        }
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            return daoPresSubgrupo.findByPresGrupo_CodigoAndEstado(codigo, Estado.A, pageable)
+                    .map(this::convertToDto);
+        } else {
+            List<DtoPresSubgrupo> subgrupos = daoPresSubgrupo.findByPresGrupo_CodigoAndEstado(codigo, Estado.A).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(subgrupos, searchCriteria, pageable);
+        }
+    }
+
+    @Override
     @Transactional
     public DtoPresSubgrupo save(DtoPresSubgrupo dtoPresSubgrupo, String accessToken) {
         validarNuevoSubgrupo(dtoPresSubgrupo);
@@ -109,12 +135,33 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
             subgrupo.setDescripcion(dtoPresSubgrupo.getDescripcion());
             subgrupo.setNombre(dtoPresSubgrupo.getNombre());
             subgrupo.setFechaCreacion(new Date());
+            subgrupo.setAlineacion(TipoAlineacion.OPERATIVA);
             subgrupo.setUsuarioCreacion(username);
+
+            // Relación padre: Grupo
+            if (dtoPresSubgrupo.getCodigoGrupoFk() != null) {
+                PresGrupo grupo = daoPresGrupo.findByCodigo(dtoPresSubgrupo.getCodigoGrupoFk())
+                        .orElseThrow(() -> new DataValidationException("No se encontró el grupo padre especificado."));
+                subgrupo.setPresGrupo(grupo);
+            } else {
+                subgrupo.setPresGrupo(null);
+            }
+
             vincularItems(subgrupo, dtoPresSubgrupo.getPresItemList(), username);
             return convertToDto(daoPresSubgrupo.save(subgrupo));
         }
 
         PresSubgrupo presSubgrupo = crearPresSubgrupo(dtoPresSubgrupo, username);
+
+        // Relación padre: Grupo
+        if (dtoPresSubgrupo.getCodigoGrupoFk() != null) {
+            PresGrupo grupo = daoPresGrupo.findByCodigo(dtoPresSubgrupo.getCodigoGrupoFk())
+                    .orElseThrow(() -> new DataValidationException("No se encontró el grupo padre especificado."));
+            presSubgrupo.setPresGrupo(grupo);
+        } else {
+            presSubgrupo.setPresGrupo(null);
+        }
+
         presSubgrupo.setEstado(Estado.A);
         vincularItems(presSubgrupo, dtoPresSubgrupo.getPresItemList(), username);
 
@@ -136,6 +183,16 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
         }
 
         actualizarDatosBasicos(presSubgrupo, dtoPresSubgrupo, username);
+
+        // Relación padre: Grupo
+        if (dtoPresSubgrupo.getCodigoGrupoFk() != null) {
+            PresGrupo grupo = daoPresGrupo.findByCodigo(dtoPresSubgrupo.getCodigoGrupoFk())
+                    .orElseThrow(() -> new DataValidationException("No se encontró el grupo padre especificado."));
+            presSubgrupo.setPresGrupo(grupo);
+        } else {
+            presSubgrupo.setPresGrupo(null);
+        }
+
         actualizarItemsAsociados(presSubgrupo, dtoPresSubgrupo.getPresItemList(), username);
 
         return convertToDto(daoPresSubgrupo.save(presSubgrupo));
@@ -153,15 +210,13 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
         presSubgrupo.setEstado(Estado.I);
         presSubgrupo.setFechaModificacion(new Date());
         presSubgrupo.setUsuarioModificacion(username);
+        presSubgrupo.setPresGrupo(null); // Desvincular grupo padre
         daoPresSubgrupo.save(presSubgrupo);
 
         // Desvincular items asociados
         if (presSubgrupo.getPresItems() != null) {
             for (PresItem presItem : presSubgrupo.getPresItems()) {
-                presItem.setPresSubgrupo(null);
-                presItem.setFechaModificacion(new Date());
-                presItem.setUsuarioModificacion(username);
-                daoPresItem.save(presItem);
+                servicePresItem.delete(presItem.getCodigo(), accessToken);
             }
         }
     }
@@ -187,9 +242,6 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
 
     private void validarNuevoSubgrupo(DtoPresSubgrupo dtoPresSubgrupo) {
         validateDtoPresSubgrupo(dtoPresSubgrupo);
-        if (daoPresSubgrupo.findByCodigo(dtoPresSubgrupo.getCodigo()).isPresent()) {
-            throw new DataValidationException("Ya existe un subgrupo con el código especificado.");
-        }
     }
 
     private String obtenerNombreUsuario(String accessToken) {
@@ -204,6 +256,7 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
         presSubgrupo.setUsuarioCreacion(username);
         presSubgrupo.setDescripcion(dto.getDescripcion());
         presSubgrupo.setNombre(dto.getNombre());
+        presSubgrupo.setAlineacion(TipoAlineacion.OPERATIVA);
         return presSubgrupo;
     }
 
@@ -233,7 +286,8 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
                                         String username) {
         presSubgrupo.setFechaModificacion(new Date());
         presSubgrupo.setUsuarioModificacion(username);
-        presSubgrupo.setEstado(dto.getEstado());
+        presSubgrupo.setEstado(Estado.A);
+        presSubgrupo.setAlineacion(TipoAlineacion.OPERATIVA);
         presSubgrupo.setDescripcion(dto.getDescripcion());
         presSubgrupo.setNombre(dto.getNombre());
     }
@@ -288,9 +342,16 @@ public class ServicePresSubgrupo implements IServicePresSubgrupo {
         dto.setFechaModificacion(presSubgrupo.getFechaModificacion());
         dto.setUsuarioModificacion(presSubgrupo.getUsuarioModificacion());
         dto.setEstado(presSubgrupo.getEstado());
+        dto.setAlineacion(presSubgrupo.getAlineacion());
         dto.setDescripcion(presSubgrupo.getDescripcion());
         dto.setNombre(presSubgrupo.getNombre());
 
+        // Relación padre: grupo
+        if (presSubgrupo.getPresGrupo() != null) {
+            dto.setCodigoGrupoFk(presSubgrupo.getPresGrupo().getCodigo());
+        }
+
+        // Relación hijo: items
         if (presSubgrupo.getPresItems() != null) {
             List<DtoPresItem> presItems = presSubgrupo.getPresItems().stream()
                     .map(pi -> {

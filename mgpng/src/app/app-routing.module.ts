@@ -27,7 +27,24 @@ const routes: Routes = [
                     import('./componentes/gestion-poa/gestion-poa.module').then(
                         (m) => m.GestionPOAModule
                     ),
+            },
+            {
+                path: 'lineamiento',
+                data: { breadcrumb: 'Lineamientos' },
+                loadChildren: () =>
+                    import('./componentes/lineamiento/lineamiento.module').then(
+                        (m) => m.LineamientoModule
+                    ),
+            },
+            {
+                path: 'formBuild',
+                data: { breadcrumb: 'Formularios' },
+                loadChildren: () =>
+                    import('./componentes/form-build/form-build.module').then(
+                        (m) => m.FormBuildModule
+                    ),
             }
+            
         ],
     },
     { path: '**', redirectTo: '/notfound' },

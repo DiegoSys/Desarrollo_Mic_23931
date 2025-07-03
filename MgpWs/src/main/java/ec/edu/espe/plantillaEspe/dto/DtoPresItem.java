@@ -9,6 +9,7 @@ import java.util.Date;
 public class DtoPresItem {
     private Long id;
     private String codigo;
+    private String codigoSubGrupoFk;
     private String nombre;
     private String descripcion;
     private String usuarioCreacion;

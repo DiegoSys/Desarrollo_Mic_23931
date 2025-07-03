@@ -1,0 +1,12 @@
+<div class="summary-card">
+  <h4 class="summary-title">{{ title }}</h4>
+  <ul *ngIf="items?.length; else empty">
+    <li *ngFor="let item of items">
+      <span class="summary-label">{{ item[labelField] }}</span>
+      <span *ngIf="descField && item[descField]" class="summary-desc">- {{ item[descField] }}</span>
+    </li>
+  </ul>
+  <ng-template #empty>
+    <div class="summary-empty">No hay elementos seleccionados.</div>
+  </ng-template>
+</div>

@@ -1,8 +1,33 @@
+<!-- Barra de búsqueda genérica mejorada -->
+<div class="mb-3 flex gap-2 align-items-center">
+  <ng-container *ngFor="let col of config?.columns">
+    <input
+      *ngIf="col.type === 'text'"
+      pInputText
+      [placeholder]="'Buscar ' + col.header"
+      [(ngModel)]="search[col.field]"
+      (ngModelChange)="emitSearch()"
+      class="search-input"
+      [attr.aria-label]="'Buscar ' + col.header"
+      autocomplete="off"
+    />
+  </ng-container>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-times"
+      class="p-button-secondary p-button-sm"
+      (click)="clearSearch()"
+      title="Limpiar búsqueda">
+      Limpiar
+    </button></div>
+
 <p-table
   [value]="data"
   [columns]="config?.columns"
   [paginator]="config?.pagination"
   [rows]="rows"
+  (onSort)="handleSort($event)"
   [showCurrentPageReport]="true"
   currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
   [rowsPerPageOptions]="config?.rowsPerPage || [10, 25, 50]"
@@ -18,8 +43,8 @@
   [globalFilterFields]="config?.globalFilterFields"
   [lazy]="true"
   (onLazyLoad)="handlePageChange($event)"
-  styleClass="p-table"
-  [style]="{'width': 'auto', 'min-width': '80%', 'max-width': '95%', 'margin': '0 auto'}"
+  styleClass="p-table green-table"
+  [style]="{'width': 'auto', 'min-width': '95%', 'max-width': '100%', 'margin': '0 auto'}"
 >
   <ng-template pTemplate="emptymessage" let-columns>
     <tr>
@@ -28,26 +53,35 @@
       </td>
     </tr>
   </ng-template>
+  
   <ng-template pTemplate="header" let-columns>
     <tr>
-      <th *ngFor="let col of columns" [hidden]="col.hidden">
+      <th *ngFor="let col of columns" [hidden]="col.hidden"
+          [pSortableColumn]="col.field"
+          style="padding: 0.75rem; background-color: #f5f5f5; border-bottom: 2px solid #2e7d32">
         {{col.header}}
+        <p-sortIcon [field]="col.field"></p-sortIcon>
       </th>
-      <th *ngIf="config?.actions?.length" style="width: 120px">Acciones</th>
+      <th *ngIf="config?.actions?.length"
+          style="width: 120px; padding: 0.75rem; background-color: #f5f5f5; border-bottom: 2px solid #2e7d32">
+        Acciones
+      </th>
     </tr>
   </ng-template>
 
   <ng-template pTemplate="body" let-rowData let-columns="columns">
-    <tr>
-      <td *ngFor="let col of columns" [hidden]="col.hidden">
-        <span *ngIf="col.type !== 'custom'" style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">
+    <tr style="border-bottom: 1px solid #e0e0e0">
+      <td *ngFor="let col of columns" [hidden]="col.hidden" 
+          style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0">
+        <span *ngIf="col.type !== 'custom'" 
+              style="display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px;">
           {{rowData[col.field] | formatCell: col.type : col.format}}
         </span>
         <ng-container *ngIf="col.type === 'custom'">
           <ng-container *ngTemplateOutlet="col.customTemplate; context: {$implicit: rowData}"></ng-container>
         </ng-container>
       </td>
-      <td *ngIf="config?.actions?.length">
+      <td *ngIf="config?.actions?.length" style="padding: 0.75rem; border-bottom: 1px solid #e0e0e0">
         <div class="actions-container">
           <ng-container *ngFor="let action of config?.actions">
             <button *ngIf="!action.visible || action.visible(rowData)"
@@ -58,7 +92,8 @@
                     [disabled]="action.disabled && action.disabled(rowData)"
                     [ngClass]="action.color || 'p-button-secondary'"
                     (click)="executeAction(action, rowData)"
-                    class="p-button-sm">
+                    class="p-button-sm"
+                    style="background-color: #2e7d32; border: none">
             </button>
           </ng-container>
         </div>

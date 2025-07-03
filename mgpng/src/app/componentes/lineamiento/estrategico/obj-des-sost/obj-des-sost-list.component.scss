@@ -1,0 +1,95 @@
+/* Estilos institucionales */
+.card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  &.status-a {
+    background-color: #2e7d32; /* Verde institucional */
+    color: white;
+  }
+
+  &.status-i {
+    background-color: #d32f2f; /* Rojo institucional */
+    color: white;
+  }
+}
+
+/* Botones pequeños */
+.p-button-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Botones con íconos */
+.p-button .pi {
+  margin-right: 0.5rem; /* Espaciado entre ícono y texto */
+}
+
+h2 {
+  color: #2e7d32; /* Verde institucional */
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 2px solid #2e7d32;
+  padding-bottom: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+
+  .p-button {
+    font-weight: 500;
+  }
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #616161;
+  font-style: italic;
+}
+
+/* Oculta el spinner predeterminado de PrimeNG con mayor especificidad */
+:host ::ng-deep .p-datatable .p-datatable-loading-overlay {
+  display: none !important;
+}
+
+/* Estilos para los botones */
+.p-button {
+  border: 1px solid #2e7d32; /* Contorno verde más apagado */
+  background-color: transparent; /* Fondo transparente */
+  color: #2e7d32; /* Texto verde más apagado */
+  font-weight: 500;
+  transition: all 0.3s ease-in-out; /* Transición suave */
+
+  &:hover {
+    background-color: #2e7d32; /* Fondo verde más apagado al pasar el mouse */
+    color: white; /* Texto blanco */
+    border-color: #4caf50; /* Mantiene el contorno verde más apagado */
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3); /* Efecto de enfoque */
+  }
+}
+
+/* Botones pequeños */
+.p-button-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Botones con íconos */
+.p-button .pi {
+  margin-right: 0.5rem; /* Espaciado entre ícono y texto */
+}

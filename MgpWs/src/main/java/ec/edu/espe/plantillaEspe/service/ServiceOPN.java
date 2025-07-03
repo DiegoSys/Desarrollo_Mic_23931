@@ -79,14 +79,25 @@ public class ServiceOPN implements IServiceOPN {
     }
 
     @Override
-    public Page<DtoOPN> findAllActivos(Pageable pageable) {
+    public Page<DtoOPN> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoOPN.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los OPNs paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoOPN.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los OPNs paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoOPN> opns = daoOPN.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(opns, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los OPNs activos.", e);
+            }
         }
     }
 

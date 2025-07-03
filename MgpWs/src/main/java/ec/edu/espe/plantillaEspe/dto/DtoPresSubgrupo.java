@@ -11,6 +11,7 @@ import java.util.List;
 public class DtoPresSubgrupo {
     private Long id;
     private String codigo;
+    private String codigoGrupoFk;
     private String nombre;
     private String descripcion;
     private String usuarioCreacion;

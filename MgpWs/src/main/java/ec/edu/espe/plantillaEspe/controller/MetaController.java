@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de metas.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar metas,
+ * así como para obtener listados y paginación de metas.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/meta")
@@ -29,6 +39,12 @@ public class MetaController {
         this.serviceMeta = serviceMeta;
     }
 
+    /**
+     * Obtiene una meta por su código.
+     *
+     * @param codigo Código de la meta.
+     * @return La meta encontrada o un error si no existe.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,6 +63,11 @@ public class MetaController {
         }
     }
 
+    /**
+     * Obtiene una lista de todas las metas activas.
+     *
+     * @return Lista de metas activas.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
@@ -59,12 +80,23 @@ public class MetaController {
         }
     }
 
+    /**
+     * Obtiene una página de metas activas, ordenadas y paginadas, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de metas activas.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -75,9 +107,15 @@ public class MetaController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoMeta> metas = serviceMeta.findAllActivos(pageable);
+            Page<DtoMeta> metas = serviceMeta.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(metas);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +124,13 @@ public class MetaController {
         }
     }
 
+    /**
+     * Crea una nueva meta.
+     *
+     * @param meta      Datos de la meta.
+     * @param authHeader Cabecera de autorización.
+     * @return Meta creada.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoMeta meta,
@@ -101,6 +146,14 @@ public class MetaController {
         }
     }
 
+    /**
+     * Actualiza una meta existente.
+     *
+     * @param codigo    Código de la meta.
+     * @param meta      Datos de la meta.
+     * @param authHeader Cabecera de autorización.
+     * @return Meta actualizada.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +173,13 @@ public class MetaController {
         }
     }
 
+    /**
+     * Elimina una meta por su código.
+     *
+     * @param codigo    Código de la meta.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta sin contenido si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
             @PathVariable String codigo,
@@ -130,7 +190,6 @@ public class MetaController {
 
         try {
             String token = extractToken(authHeader);
-
             serviceMeta.delete(codigo, token);
             return ResponseEntity.noContent().build();
         } catch (DataValidationException e) {

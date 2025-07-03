@@ -11,13 +11,35 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Interfaz que define las operaciones de acceso a datos para la entidad ModelUzktopn.
- * Proporciona métodos para gestionar los objetivos del plan nacional.
+ * Interfaz para operaciones de acceso a datos de la entidad {@link OPN}.
+ * Permite buscar objetivos del plan nacional por código y filtrar por estado,
+ * con soporte para paginación.
  *
  * @author ITS
  */
 public interface DaoOPN extends JpaRepository<OPN, Long> {
+    /**
+     * Busca un objetivo del plan nacional por su código.
+     *
+     * @param codigo Código del objetivo.
+     * @return Un Optional con el objetivo encontrado, si existe.
+     */
     Optional<OPN> findByCodigo(String codigo);
+
+    /**
+     * Obtiene una lista de objetivos del plan nacional filtrados por estado.
+     *
+     * @param estado Estado del objetivo.
+     * @return Lista de objetivos con el estado especificado.
+     */
     List<OPN> findByEstado(Estado estado);
+
+    /**
+     * Obtiene una página de objetivos del plan nacional filtrados por estado.
+     *
+     * @param estado   Estado del objetivo.
+     * @param pageable Información de paginación.
+     * @return Página de objetivos con el estado especificado.
+     */
     Page<OPN> findByEstado(Estado estado, Pageable pageable);
 }

@@ -7,13 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IServiceOPN {
     DtoOPN find(String codigo);
     Page<DtoOPN> findAll(Pageable pageable);
     List<DtoOPN> findAll();
     List<DtoOPN> findAllActivos();
-    Page<DtoOPN> findAllActivos(Pageable pageable);
+    Page<DtoOPN> findAllActivos(Pageable pageable, Map<String, String> searchCriteria);
     DtoOPN save(DtoOPN dtoOPN, String accessToken);
     DtoOPN update(DtoOPN dtoOPN, String accessToken);
     void delete(String codigo, String accessToken);

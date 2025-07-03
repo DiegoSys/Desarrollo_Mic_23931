@@ -32,16 +32,19 @@ public class ServicePresGrupo implements IServicePresGrupo {
     private final UserInfoService userInfoService;
     private final DaoPresSubgrupo daoPresSubgrupo;
     private final DaoPresNaturaleza daoPresNaturaleza;
+    private final ServicePresSubgrupo servicePresSubgrupo;
 
     @Autowired
     public ServicePresGrupo(DaoPresGrupo daoPresGrupo,
                             UserInfoService userInfoService,
                             DaoPresSubgrupo daoPresSubgrupo,
-                            DaoPresNaturaleza daoPresNaturaleza) {
+                            DaoPresNaturaleza daoPresNaturaleza,
+                            ServicePresSubgrupo servicePresSubgrupo) {
         this.daoPresGrupo = daoPresGrupo;
         this.userInfoService = userInfoService;
         this.daoPresSubgrupo = daoPresSubgrupo;
         this.daoPresNaturaleza = daoPresNaturaleza;
+        this.servicePresSubgrupo = servicePresSubgrupo;
     }
 
     @Override
@@ -87,14 +90,34 @@ public class ServicePresGrupo implements IServicePresGrupo {
     }
 
     @Override
-    public Page<DtoPresGrupo> findAllActivos(Pageable pageable) {
+    public Page<DtoPresGrupo> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
             return daoPresGrupo.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los grupos activos paginados.", e);
+        } else {
+            List<DtoPresGrupo> grupos = daoPresGrupo.findByEstado(Estado.A).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(grupos, searchCriteria, pageable);
+        }
+    }
+
+    @Override
+    public Page<DtoPresGrupo> findByPresNaturaleza_Codigo(String codigo, Pageable pageable, Map<String, String> searchCriteria) {
+        validateCodigo(codigo);
+        if (pageable == null) {
+            throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        }
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            return daoPresGrupo.findByPresNaturaleza_CodigoAndEstado(codigo, Estado.A, pageable)
+                    .map(this::convertToDto);
+        } else {
+            List<DtoPresGrupo> grupos = daoPresGrupo.findByPresNaturaleza_CodigoAndEstado(codigo, Estado.A).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(grupos, searchCriteria, pageable);
         }
     }
 
@@ -183,22 +206,19 @@ public class ServicePresGrupo implements IServicePresGrupo {
         validateCodigo(codigo);
         PresGrupo presGrupo = daoPresGrupo.findByCodigo(codigo)
                 .orElseThrow(() -> new DataValidationException("No se encontró un grupo con el código especificado."));
-
+    
         String username = obtenerNombreUsuario(accessToken);
-
+    
         presGrupo.setEstado(Estado.I);
         presGrupo.setFechaModificacion(new Date());
         presGrupo.setUsuarioModificacion(username);
         presGrupo.setPresNaturaleza(null); // Desvincular naturaleza
         daoPresGrupo.save(presGrupo);
-
-        // Desvincular subgrupos asociados
+    
+        // Inactivar subgrupos asociados usando el servicio
         if (presGrupo.getPresSubgrupos() != null) {
             for (PresSubgrupo presSubgrupo : presGrupo.getPresSubgrupos()) {
-                presSubgrupo.setPresGrupo(null);
-                presSubgrupo.setFechaModificacion(new Date());
-                presSubgrupo.setUsuarioModificacion(username);
-                daoPresSubgrupo.save(presSubgrupo);
+                servicePresSubgrupo.delete(presSubgrupo.getCodigo(), accessToken);
             }
         }
     }

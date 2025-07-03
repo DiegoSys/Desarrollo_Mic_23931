@@ -1,100 +1,179 @@
 <div class="form-container">
-  <div class="form-header mb-4">
-    <h2 class="mb-1">{{title}}</h2>
-    <div *ngIf="form.get('codigo')?.value" class="code-display d-flex align-items-center gap-2 py-2 px-3 bg-light border-start border-4 border-success rounded shadow-sm" style="font-size:1.1rem;">
-      <i class="pi pi-bookmark text-success"></i>
-      <span class="fw-semibold">CÓDIGO:</span>
-      <ng-container *ngIf="isEditing; else concatCode">
-        <span class="text-dark">{{form.get('codigo')?.value}}</span>
-      </ng-container>
-      <ng-template #concatCode>
-        <span class="text-dark">{{form.get('codigoNaturalezaFk')?.value}}{{form.get('codigo')?.value}}</span>
-      </ng-template>
-    </div>
-  </div>
+        <header class="form-header mb-3">
+      <h2 class="mb-0 me-3">{{ title }}</h2>
+      <div *ngIf="form.get('codigo')?.value" class="code-display">
+        <i class="pi pi-id-card"></i>
+        <span>CÓDIGO: </span>
+        <ng-container *ngIf="isEditing; else concatCode">
+          <span>{{ form.get('codigo')?.value }}</span>
+        </ng-container>
+        <ng-template #concatCode>
+          <ng-container *ngIf="showCodigoCompuesto && getCodigoPadre(); else soloCodigo">
+            <span>{{ getCodigoPadre() }}.{{ form.get('codigo')?.value }}</span>
+          </ng-container>
+          <ng-template #soloCodigo>
+            <span>{{ form.get('codigo')?.value }}</span>
+          </ng-template>
+        </ng-template>
+      </div>
+    </header>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form-grid">
-      <div class="form-field mb-4" *ngFor="let field of fields"
-        [class.full-width]="field.width === 'full'"
-        [class.half-width]="field.width === 'half'"
-        [class.third-width]="field.width === 'third'"
-        [class.quarter-width]="field.width === 'quarter'"
-        [class]="field.cssClass">
-        <label class="form-label fw-semibold mb-1">{{field.label}}<span *ngIf="field.required" class="text-danger">*</span></label>
+      <div class="form-field mb-4" *ngFor="let field of fields" [class.full-width]="field.width === 'full'"
+        [class.half-width]="field.width === 'half'" [class.third-width]="field.width === 'third'"
+        [class.quarter-width]="field.width === 'quarter'" [class]="field.cssClass">
+        <label class="form-label fw-semibold mb-1">
+          {{field.label}}
+          <span *ngIf="field.required" class="text-danger" style="color: #f44336;">*</span>
+        </label>
 
         <ng-container [ngSwitch]="field.type">
-          <!-- Text Input Mejorado -->
-          <div *ngSwitchCase="'text'" class="input-group position-relative">
-            <span *ngIf="field.prefix" class="input-group-text bg-success bg-opacity-10 text-success border-0">
-              {{field.prefix}}
-            </span>
-            <input
-              pInputText
-              [formControlName]="field.name"
+          <!-- Text Input -->
+          <div *ngSwitchCase="'text'" class="text-input-container">
+            <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+              <span *ngIf="field.prefix" class="prefix">
+                {{field.prefix}}
+              </span>
+              <input pInputText [formControlName]="field.name" [placeholder]="field.label" [disabled]="field.disabled"
+                class="form-control"
+                [attr.maxlength]="field.maxLength"
+                [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}"
+                autocomplete="off"
+                style="flex: 1 1 auto;"/>
+              <span class="input-icons" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+                <i *ngIf="form.get(field.name)?.valid && form.get(field.name)?.touched"
+                  class="pi pi-check-circle valid-icon" style="color: #2e7d32; font-size: 1.2em;"></i>
+                <i *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched"
+                  class="pi pi-exclamation-circle invalid-icon" style="color: #f44336; font-size: 1.2em;"></i>
+              </span>
+            </div>
+            <div class="input-meta">
+              <small *ngIf="field.maxLength" class="char-counter">
+                {{ form.get(field.name)?.value?.length || 0 }}/{{ field.maxLength }}
+              </small>
+            </div>
+          </div>
+
+          <!-- Number Input -->
+          <div *ngSwitchCase="'number'" class="number-input-container">
+            <div style="position: relative; display: flex; align-items: center;">
+              <input pInputText type="number" [formControlName]="field.name" [placeholder]="field.label"
+                class="form-control"
+                [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}"
+                style="flex: 1 1 auto;"/>
+              <span class="input-icons" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+                <i *ngIf="form.get(field.name)?.valid && form.get(field.name)?.touched"
+                  class="pi pi-check-circle valid-icon" style="color: #2e7d32; font-size: 1.2em;"></i>
+                <i *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched"
+                  class="pi pi-exclamation-circle invalid-icon" style="color: #f44336; font-size: 1.2em;"></i>
+              </span>
+            </div>
+          </div>
+
+          <!-- Select Dropdown con botón "+" externo -->
+          <div 
+            *ngSwitchCase="'select'" 
+            class="d-flex align-items-center gap-2">
+            <p-dropdown 
+              [options]="field.options || []" 
+              [formControlName]="field.name" 
               [placeholder]="field.label"
-              [disabled]="field.disabled"
-              class="form-control"
-              [attr.maxlength]="field.maxLength"
-              [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}"
-              autocomplete="off"
-              style="padding-right: 40px;"
-            />
-            <i *ngIf="form.get(field.name)?.valid && form.get(field.name)?.touched"
-              class="pi pi-check-circle text-success"
-              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
-            <i *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched"
-              class="pi pi-exclamation-circle text-danger"
-              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
-            <small *ngIf="field.maxLength" style="position: absolute; right: 40px; bottom: 2px; color: #888;">
-              {{ form.get(field.name)?.value?.length || 0 }}/{{ field.maxLength }}
-            </small>
-            <small *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched" class="p-error d-block mt-1">
-              <ng-container *ngIf="form.get(field.name)?.errors?.['required']">
-                Campo requerido
-              </ng-container>
-              <ng-container *ngIf="form.get(field.name)?.errors?.['maxlength']">
-                Máximo {{ form.get(field.name)?.errors?.['maxlength'].requiredLength }} caracteres
-              </ng-container>
-              <ng-container *ngIf="form.get(field.name)?.errors?.['minlength']">
-                Mínimo {{ form.get(field.name)?.errors?.['minlength'].requiredLength }} caracteres
-              </ng-container>
-            </small>
+              [optionLabel]="field.optionLabel || 'label'" 
+              [optionValue]="field.optionValue || 'value'"
+              class="form-control flex-grow-1" 
+              [filter]="true" 
+              [appendTo]="'body'">
+              <ng-template 
+                pTemplate="footer">
+                <div 
+                  style="padding: 0; margin: 0;" 
+                  *ngIf="field.showAddButton">
+                  <button 
+                    pButton type="button" 
+                    icon="pi pi-plus" 
+                    class="p-button-text" 
+                    style="
+                      width: 100%;
+                      border-radius: 0;
+                      justify-content: center;
+                      display: flex;
+                      align-items: center;
+                      font-weight: 500;
+                      text-align: center;
+                    " (click)="onAddOption(field)">
+                    Agregar nuevo
+                  </button>
+                </div>
+              </ng-template>
+            </p-dropdown>
           </div>
 
-          <!-- Number Input Mejorado -->
-          <div *ngSwitchCase="'number'" class="position-relative">
-            <input pInputText type="number" [formControlName]="field.name"
-              [placeholder]="field.label" class="form-control"
-              [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}">
-            <i *ngIf="form.get(field.name)?.valid && form.get(field.name)?.touched"
-              class="pi pi-check-circle text-success"
-              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
-            <i *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched"
-              class="pi pi-exclamation-circle text-danger"
-              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 1.2rem;"></i>
+          <!-- MultiSelect Mejorado con botón "+" integrado en el panel -->
+          <div *ngSwitchCase="'multiselect'" class="position-relative">
+            <p-multiSelect 
+              [options]="field.options || []" 
+              [formControlName]="field.name" 
+              [placeholder]="field.label"
+              [optionLabel]="field.optionLabel || 'label'" 
+              [optionValue]="field.optionValue || 'value'"
+              [display]="'chip'" 
+              [showToggleAll]="true" 
+              [filter]="true" 
+              [showHeader]="false"
+              [selectedItemsLabel]="'{0} seleccionados'" 
+              [maxSelectedLabels]="4" 
+              [showClear]="true"
+              [dropdownIcon]="'pi pi-chevron-down'" 
+              [virtualScroll]="true" 
+              [virtualScrollItemSize]="32"
+              class="form-control">
+              <ng-template pTemplate="footer">
+                <div 
+                  style="padding: 0;" 
+                  *ngIf="field.showAddButton">
+                  <button 
+                    pButton 
+                    type="button" 
+                    icon="pi pi-plus" 
+                    class="p-button-text" 
+                    style="
+                      width: 100%;
+                      border-radius: 0;
+                      justify-content: center;
+                      display: flex;
+                      align-items: center;
+                      font-weight: 500;
+                      text-align: center;
+                    " (click)="onAddOption(field)">
+                    Agregar nuevo
+                  </button>
+                </div>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+          <!-- Date Range Picker -->
+          <div *ngSwitchCase="'daterange'" class="date-range-container">
+            <p-calendar [formControlName]="field.name + 'Start'" [placeholder]="'Fecha inicio'" dateFormat="dd/mm/yy"
+              class="form-control" [showIcon]="true" [showButtonBar]="true">
+            </p-calendar>
+            <span class="date-range-separator">a</span>
+            <p-calendar [formControlName]="field.name + 'End'" [placeholder]="'Fecha fin'" dateFormat="dd/mm/yy"
+              class="form-control" [showIcon]="true" [showButtonBar]="true">
+            </p-calendar>
           </div>
 
-          <!-- Select Dropdown Mejorado -->
-          <p-dropdown *ngSwitchCase="'select'" [options]="field.options || []" [formControlName]="field.name"
-            [placeholder]="field.label" [optionLabel]="field.optionLabel || 'label'"
-            [optionValue]="field.optionValue || 'value'" class="form-control"
-            [showClear]="true" [filter]="true">
-          </p-dropdown>
-
-          <!-- MultiSelect Mejorado -->
-          <p-multiSelect *ngSwitchCase="'multiselect'" [options]="field.options || []" [formControlName]="field.name"
-            [placeholder]="field.label" [optionLabel]="field.optionLabel || 'label'"
-            [optionValue]="field.optionValue || 'value'" [display]="'chip'" [showToggleAll]="true" [filter]="true"
-            [showHeader]="false" [panelStyle]="{ 'min-width': '300px' }" [selectedItemsLabel]="'{0} seleccionados'"
-            [maxSelectedLabels]="4" [showClear]="true" [dropdownIcon]="'pi pi-chevron-down'" [virtualScroll]="true"
-            [virtualScrollItemSize]="32" class="form-control">
-          </p-multiSelect>
-
-          <!-- Date Picker Mejorado -->
-          <p-calendar *ngSwitchCase="'date'" [formControlName]="field.name" [placeholder]="field.label"
-            dateFormat="dd/mm/yy" class="form-control" [showIcon]="true" [showButtonBar]="true">
-          </p-calendar>
+          <!-- Single Date Picker -->
+          <div *ngSwitchCase="'date'" class="d-flex align-items-center gap-2">
+            <p-calendar 
+              [formControlName]="field.name" 
+              [placeholder]="field.label" 
+              dateFormat="dd/mm/yy"
+              class="form-control" 
+              [showIcon]="true" 
+              [showButtonBar]="true">
+            </p-calendar>
+          </div>
 
           <!-- Checkbox Mejorado -->
           <div *ngSwitchCase="'checkbox'" class="d-flex align-items-center gap-2">
@@ -102,44 +181,44 @@
             <label class="mb-0">{{field.label}}</label>
           </div>
 
-          <!-- Textarea Mejorada -->
-          <div style="position: relative;" *ngSwitchCase="'textarea'">
-            <textarea pInputTextarea [formControlName]="field.name" [placeholder]="field.label" rows="3"
-              class="form-control" maxlength="360"
-              [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}">
-            </textarea>
-            <small style="position: absolute; right: 8px; bottom: 4px; color: #888;">
-              {{ form.get(field.name)?.value?.length || 0 }}/360
-            </small>
-            <small *ngIf="form.get(field.name)?.touched && form.get(field.name)?.invalid" class="p-error">
-              <ng-container *ngIf="form.get(field.name)?.errors?.['required']">
-                Campo requerido
-              </ng-container>
-              <ng-container
-                *ngIf="form.get(field.name)?.errors?.['minlength'] && !form.get(field.name)?.errors?.['required']">
-                Mínimo {{ form.get(field.name)?.errors?.['minlength'].requiredLength }} caracteres
-              </ng-container>
-              <ng-container
-                *ngIf="form.get(field.name)?.errors?.['maxlength'] && !form.get(field.name)?.errors?.['required']">
-                Máximo {{ form.get(field.name)?.errors?.['maxlength'].requiredLength }} caracteres
-              </ng-container>
-            </small>
+          <!-- Textarea -->
+          <div *ngSwitchCase="'textarea'" class="textarea-container">
+            <div style="position: relative; display: flex; align-items: center;">
+              <textarea pInputTextarea [formControlName]="field.name" [placeholder]="field.label" rows="3"
+                class="form-control" maxlength="1000"
+                [ngClass]="{'is-invalid': form.get(field.name)?.invalid && form.get(field.name)?.touched}"
+                style="flex: 1 1 auto;"></textarea>
+              <span class="input-icons" style="position: absolute; right: 10px; top: 10px;">
+                <i *ngIf="form.get(field.name)?.valid && form.get(field.name)?.touched"
+                  class="pi pi-check-circle valid-icon" style="color: #2e7d32; font-size: 1.2em;"></i>
+                <i *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched"
+                  class="pi pi-exclamation-circle invalid-icon" style="color: #f44336; font-size: 1.2em;"></i>
+              </span>
+            </div>
+            <div class="textarea-meta">
+              <small *ngIf="field.maxLength" class="char-counter">
+                {{ form.get(field.name)?.value?.length || 0 }}/360
+              </small>
+            </div>
           </div>
         </ng-container>
-
-        <small *ngIf="form.get(field.name)?.invalid && form.get(field.name)?.touched && field.type !== 'textarea'"
-          class="p-error">
-          <ng-container *ngIf="form.get(field.name)?.errors?.['required']">
-            Campo requerido
-          </ng-container>
-        </small>
       </div>
     </div>
 
     <div class="form-actions d-flex gap-2 mt-3">
-      <button pButton type="submit" [label]="submitText" [disabled]="form.invalid" class="p-button-success"></button>
-      <button *ngIf="showCancelButton" pButton type="button" label="Volver" class="p-button-secondary"
-        (click)="cancel.emit()"></button>
+      <button 
+        pButton type="submit" 
+        [label]="submitText" 
+        [disabled]="form.invalid" 
+        class="p-button-success">
+      </button>
+      <button 
+        *ngIf="showCancelButton" 
+        pButton type="button" 
+        label="Volver" 
+        class="p-button-secondary"
+        (click)="cancel.emit()">
+      </button>
     </div>
   </form>
 </div>

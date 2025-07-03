@@ -15,9 +15,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de ejes.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar ejes,
+ * así como para obtener listados y paginación de ejes.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/eje")
@@ -30,6 +40,12 @@ public class EjeController {
         this.serviceEje = serviceEje;
     }
 
+    /**
+     * Obtiene un eje por su código.
+     *
+     * @param codigo Código del eje.
+     * @return El eje encontrado o un error si no existe.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -48,6 +64,11 @@ public class EjeController {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los ejes.
+     *
+     * @return Lista de ejes.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
@@ -60,12 +81,23 @@ public class EjeController {
         }
     }
 
+    /**
+     * Obtiene una página de ejes, ordenados y paginados, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de ejes.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -76,9 +108,15 @@ public class EjeController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoEje> ejes = serviceEje.findAllActivos(pageable);
+            Page<DtoEje> ejes = serviceEje.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(ejes);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -87,6 +125,13 @@ public class EjeController {
         }
     }
 
+    /**
+     * Crea un nuevo eje.
+     *
+     * @param eje        Datos del eje.
+     * @param authHeader Cabecera de autorización.
+     * @return Eje creado.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoEje eje,
@@ -102,6 +147,14 @@ public class EjeController {
         }
     }
 
+    /**
+     * Actualiza un eje existente.
+     *
+     * @param codigo     Código del eje.
+     * @param eje        Datos del eje.
+     * @param authHeader Cabecera de autorización.
+     * @return Eje actualizado.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -119,6 +172,14 @@ public class EjeController {
         }
     }
 
+    /**
+     * Elimina un eje por su código.
+     *
+     * @param codigo     Código del eje.
+     * @param obj        Objeto relacionado (no usado).
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta sin contenido si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
             @PathVariable String codigo,
@@ -137,7 +198,7 @@ public class EjeController {
         } catch (NotFoundException e) {
             return notFound(e.getMessage());
         } catch (Exception e) {
-            return internalServerError("Ocurrió un error interno al eliminar el eje."+  e);
+            return internalServerError("Ocurrió un error interno al eliminar el eje.");
         }
     }
 

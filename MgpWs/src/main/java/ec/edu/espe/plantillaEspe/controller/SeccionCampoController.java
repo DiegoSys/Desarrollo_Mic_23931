@@ -47,7 +47,7 @@ public class SeccionCampoController {
         }
     }
 
-    @GetMapping("list")
+    @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
             List<DtoSeccionCampo> seccionCampos = serviceSeccionCampo.findAll();
@@ -86,6 +86,90 @@ public class SeccionCampoController {
         }
     }
 
+    /**
+     * Obtiene todos los campos de una sección específica con paginación.
+     *
+     * @param codigoSeccion Código de la sección.
+     * @param page          Número de página.
+     * @param size          Tamaño de página.
+     * @param sort          Campo de ordenamiento.
+     * @param direction     Dirección de ordenamiento (asc/desc).
+     * @return Página de campos de la sección.
+     */
+    @GetMapping("/seccion/{codigoSeccion}")
+    public ResponseEntity<?> findByCodigoSeccion(
+            @PathVariable String codigoSeccion,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        if (codigoSeccion == null || codigoSeccion.isEmpty()) {
+            return badRequest("El código de la sección no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoSeccionCampo> seccionCampos = serviceSeccionCampo.findByCodigoSeccion(codigoSeccion, pageable);
+            return ResponseEntity.ok(seccionCampos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los campos de la sección paginados.");
+        }
+    }
+
+    /**
+     * Obtiene todas las secciones que usan un campo específico con paginación.
+     *
+     * @param codigoCampo Código del campo.
+     * @param page        Número de página.
+     * @param size        Tamaño de página.
+     * @param sort        Campo de ordenamiento.
+     * @param direction   Dirección de ordenamiento (asc/desc).
+     * @return Página de secciones que usan el campo.
+     */
+    @GetMapping("/campo/{codigoCampo}")
+    public ResponseEntity<?> findByCodigoCampo(
+            @PathVariable String codigoCampo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        if (codigoCampo == null || codigoCampo.isEmpty()) {
+            return badRequest("El código del campo no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoSeccionCampo> seccionCampos = serviceSeccionCampo.findByCodigoCampo(codigoCampo, pageable);
+            return ResponseEntity.ok(seccionCampos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener las secciones del campo paginadas.");
+        }
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoSeccionCampo seccionCampo,
@@ -113,6 +197,8 @@ public class SeccionCampoController {
             return ResponseEntity.ok(updatedSeccionCampo);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
+        } catch (NotFoundException e) {
+            return notFound(e.getMessage());
         } catch (Exception e) {
             return internalServerError("Ocurrió un error interno al actualizar la relación sección-campo.");
         }

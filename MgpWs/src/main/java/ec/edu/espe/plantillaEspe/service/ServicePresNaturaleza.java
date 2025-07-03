@@ -29,14 +29,20 @@ public class ServicePresNaturaleza implements IServicePresNaturaleza {
     private final DaoPresNaturaleza daoPresNaturaleza;
     private final UserInfoService userInfoService;
     private final DaoPresGrupo daoPresGrupo;
+    private final ServicePresGrupo servicePresGrupo;
+
+
 
     @Autowired
     public ServicePresNaturaleza(DaoPresNaturaleza daoPresNaturaleza,
                                  UserInfoService userInfoService,
-                                 DaoPresGrupo daoPresGrupo) {
+                                 DaoPresGrupo daoPresGrupo,
+                                 ServicePresGrupo servicePresGrupo) {
         this.daoPresNaturaleza = daoPresNaturaleza;
         this.userInfoService = userInfoService;
         this.daoPresGrupo = daoPresGrupo;
+        this.servicePresGrupo = servicePresGrupo;
+
     }
 
     @Override
@@ -82,14 +88,19 @@ public class ServicePresNaturaleza implements IServicePresNaturaleza {
     }
 
     @Override
-    public Page<DtoPresNaturaleza> findAllActivos(Pageable pageable) {
+    public Page<DtoPresNaturaleza> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            System.out.println("List Naturalezas 1: " + daoPresNaturaleza.findByEstado(Estado.A, pageable));
             return daoPresNaturaleza.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener las naturalezas activas paginadas.", e);
+        } else {
+            List<DtoPresNaturaleza> naturalezas = daoPresNaturaleza.findByEstado(Estado.A).stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+            System.out.println("List Naturalezas 2: " + naturalezas);
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(naturalezas, searchCriteria, pageable);
         }
     }
 
@@ -164,22 +175,20 @@ public class ServicePresNaturaleza implements IServicePresNaturaleza {
         validateCodigo(codigo);
         PresNaturaleza presNaturaleza = daoPresNaturaleza.findByCodigo(codigo)
                 .orElseThrow(() -> new DataValidationException("No se encontró una naturaleza con el código especificado."));
-
+    
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
         String username = (String) userInfo.get("name");
-
+    
         presNaturaleza.setUsuarioModificacion(username);
         presNaturaleza.setEstado(Estado.I);
         presNaturaleza.setFechaModificacion(new Date());
         daoPresNaturaleza.save(presNaturaleza);
-
+    
         // Desvincular grupos asociados
         if (presNaturaleza.getPresGrupo() != null) {
             for (PresGrupo presGrupo : presNaturaleza.getPresGrupo()) {
-                presGrupo.setPresNaturaleza(null);
-                presGrupo.setFechaModificacion(new Date());
-                presGrupo.setUsuarioModificacion(username);
-                daoPresGrupo.save(presGrupo);
+                // Llamar al servicio de presGrupo para poner inactivo el Grupo 
+                servicePresGrupo.delete(presGrupo.getCodigo(), accessToken);
             }
         }
     }

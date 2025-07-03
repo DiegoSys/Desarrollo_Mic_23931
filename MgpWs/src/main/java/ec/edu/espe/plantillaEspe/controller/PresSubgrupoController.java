@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de subgrupos presupuestarios.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar subgrupos,
+ * así como para obtener listados y paginación de subgrupos.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/pressubgrupo")
@@ -29,6 +39,12 @@ public class PresSubgrupoController {
         this.service = service;
     }
 
+    /**
+     * Obtiene un subgrupo por su código.
+     *
+     * @param codigo Código del subgrupo.
+     * @return Subgrupo encontrado o error si no se encuentra.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,6 +63,11 @@ public class PresSubgrupoController {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los subgrupos.
+     *
+     * @return Lista de subgrupos.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
@@ -59,6 +80,15 @@ public class PresSubgrupoController {
         }
     }
 
+    /**
+     * Obtiene una página de subgrupos activos, con paginación.
+     *
+     * @param page      Número de página.
+     * @param size      Tamaño de página.
+     * @param sort      Campo de ordenamiento.
+     * @param direction Dirección de ordenamiento (asc/desc).
+     * @return Página de subgrupos activos.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
@@ -86,6 +116,63 @@ public class PresSubgrupoController {
         }
     }
 
+    /**
+     * Obtiene una página de subgrupos filtrados por el código de grupo.
+     *
+     * @param codigo        Código del grupo.
+     * @param page          Número de página.
+     * @param size          Tamaño de página.
+     * @param sort          Campo de ordenamiento.
+     * @param direction     Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de subgrupos filtrados por grupo.
+     */
+    @GetMapping("/grupo/{codigo}")
+    public ResponseEntity<?> findByPresGrupoCodigo(
+            @PathVariable String codigo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
+
+        if (codigo == null || codigo.isEmpty()) {
+            return badRequest("El código del grupo no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoPresSubgrupo> presSubgrupos = service.findByPresGrupo_Codigo(codigo, pageable, searchCriteria);
+            return ResponseEntity.ok(presSubgrupos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los subgrupos por grupo.");
+        }
+    }
+
+    /**
+     * Crea un nuevo subgrupo.
+     *
+     * @param presSubgrupo Datos del subgrupo.
+     * @param authHeader   Cabecera de autorización.
+     * @return Subgrupo creado.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoPresSubgrupo presSubgrupo,
@@ -101,6 +188,14 @@ public class PresSubgrupoController {
         }
     }
 
+    /**
+     * Actualiza un subgrupo existente.
+     *
+     * @param codigo       Código del subgrupo.
+     * @param presSubgrupo Datos del subgrupo.
+     * @param authHeader   Cabecera de autorización.
+     * @return Subgrupo actualizado.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +215,13 @@ public class PresSubgrupoController {
         }
     }
 
+    /**
+     * Elimina un subgrupo por su código.
+     *
+     * @param codigo     Código del subgrupo.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta vacía si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
         @PathVariable String codigo,

@@ -72,14 +72,25 @@ public class ServicePlanNacional implements IServicePlanNacional {
     }
 
     @Override
-    public Page<DtoPlanNacional> findAllActivos(Pageable pageable) {
+    public Page<DtoPlanNacional> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoPlanNacional.findByEstado(Estado.A, pageable).map(this::mapToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los planes nacionales activos.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoPlanNacional.findByEstado(Estado.A, pageable).map(this::mapToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los planes nacionales activos.", e);
+            }
+        } else {
+            try {
+                List<DtoPlanNacional> planes = daoPlanNacional.findByEstado(Estado.A).stream()
+                        .map(this::mapToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(planes, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los planes nacionales activos.", e);
+            }
         }
     }
 

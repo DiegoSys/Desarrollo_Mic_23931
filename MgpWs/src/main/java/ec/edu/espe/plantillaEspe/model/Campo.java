@@ -1,8 +1,10 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -22,12 +24,15 @@ public class Campo {
     @Column(name = "UZKTCAMPOS_CODE", length = 60, unique = true)
     private String codigo;
 
-    @Column(name = "UZKTCAMPOS_DESC", length = 360)
+    @Column(name = "UZKTCAMPOS_NOMBRE")
+    private String nombre;
+
+    @Column(name = "UZKTCAMPOS_DESC")
     private String descripcion;
 
-    @Column(name = "UZKTCAMPOS_STATUS", length = 6)
-    private String estado;
-
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTCAMPOS_STATUS")
+    private Estado estado;
     @Column(name = "UZKTCAMPOS_USER_CREA", length = 60)
     private String usuarioCreacion;
 
@@ -44,8 +49,17 @@ public class Campo {
     @Temporal(TemporalType.DATE)
     private Date fechaModificacion;
 
-    @OneToMany(mappedBy = "campo", fetch = FetchType.LAZY)
-    List<SeccionCampo> seccionCampos = new ArrayList<>();
+    @ToString.Exclude  // Excluir del toString para evitar recursión
+    @OneToMany(mappedBy = "campo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SeccionCampo> seccionCampos = new ArrayList<>();
 
+    @ToString.Exclude  // Excluir del toString para evitar recursión
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UZKTTIPOCAMPO_CODE", referencedColumnName = "UZKTTIPOCAMPO_CODE")
+    private TipoCampo tipoCampo;
 
+    @ToString.Exclude  // Excluir del toString para evitar recursión
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UZKTMATRIZ_ID", referencedColumnName = "UZKTMATRIZ_ID")
+    private Matriz matriz;
 }

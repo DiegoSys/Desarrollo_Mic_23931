@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de grupos presupuestarios.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar grupos,
+ * así como para obtener listados y paginación de grupos.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/presgrupo")
@@ -29,6 +39,12 @@ public class PresGrupoController {
         this.service = service;
     }
 
+    /**
+     * Obtiene un grupo por su código.
+     *
+     * @param codigo Código del grupo.
+     * @return Grupo encontrado o error si no se encuentra.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,10 +63,15 @@ public class PresGrupoController {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los grupos activos.
+     *
+     * @return Lista de grupos activos.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
-            List<DtoPresGrupo> presGrupos = service.findAll();
+            List<DtoPresGrupo> presGrupos = service.findAllActivos();
             return ResponseEntity.ok(presGrupos);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -59,12 +80,23 @@ public class PresGrupoController {
         }
     }
 
+    /**
+     * Obtiene una página de grupos activos, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de grupos activos.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -75,9 +107,15 @@ public class PresGrupoController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoPresGrupo> presGrupos = service.findAllActivos(pageable);
+            Page<DtoPresGrupo> presGrupos = service.findAllActivos(pageable, searchCriteria );
             return ResponseEntity.ok(presGrupos);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +124,13 @@ public class PresGrupoController {
         }
     }
 
+    /**
+     * Crea un nuevo grupo.
+     *
+     * @param presGrupo  Datos del grupo.
+     * @param authHeader Cabecera de autorización.
+     * @return Grupo creado.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoPresGrupo presGrupo,
@@ -101,6 +146,14 @@ public class PresGrupoController {
         }
     }
 
+    /**
+     * Actualiza un grupo existente.
+     *
+     * @param codigo     Código del grupo.
+     * @param presGrupo  Datos del grupo.
+     * @param authHeader Cabecera de autorización.
+     * @return Grupo actualizado.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +173,63 @@ public class PresGrupoController {
         }
     }
 
+    /**
+     * Obtiene una página de grupos filtrados por el código de naturaleza.
+     *
+     * @param codigo        Código de la naturaleza.
+     * @param page          Número de página.
+     * @param size          Tamaño de página.
+     * @param sort          Campo de ordenamiento.
+     * @param direction     Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de grupos filtrados por naturaleza.
+     */
+    @GetMapping("/naturaleza/{codigo}")
+    public ResponseEntity<?> findByPresNaturaleza_Codigo(
+            @PathVariable String codigo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
+
+        if (codigo == null || codigo.isEmpty()) {
+            return badRequest("El código de naturaleza no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoPresGrupo> presGrupos = service.findByPresNaturaleza_Codigo(codigo, pageable, searchCriteria);
+            return ResponseEntity.ok(presGrupos);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los grupos por naturaleza.");
+        }
+    }
+
+    /**
+     * Elimina un grupo por su código.
+     *
+     * @param codigo     Código del grupo.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta vacía si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
         @PathVariable String codigo,

@@ -11,13 +11,35 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Interfaz que define las operaciones de acceso a datos para la entidad ModelUzktobjoper.
- * Proporciona métodos para gestionar los objetivos operativos.
+ * Interfaz para operaciones de acceso a datos de la entidad {@link ObjOperativo}.
+ * Permite buscar objetivos operativos por código y filtrar por estado,
+ * con soporte para paginación.
  *
  * @author ITS
  */
 public interface DaoObjOperativo extends JpaRepository<ObjOperativo, Long> {
+    /**
+     * Busca un objetivo operativo por su código.
+     *
+     * @param codigo Código del objetivo operativo.
+     * @return Un Optional con el objetivo encontrado, si existe.
+     */
     Optional<ObjOperativo> findByCodigo(String codigo);
+
+    /**
+     * Obtiene una lista de objetivos operativos filtrados por estado.
+     *
+     * @param estado Estado del objetivo operativo.
+     * @return Lista de objetivos operativos con el estado especificado.
+     */
     List<ObjOperativo> findByEstado(Estado estado);
+
+    /**
+     * Obtiene una página de objetivos operativos filtrados por estado.
+     *
+     * @param estado   Estado del objetivo operativo.
+     * @param pageable Información de paginación.
+     * @return Página de objetivos operativos con el estado especificado.
+     */
     Page<ObjOperativo> findByEstado(Estado estado, Pageable pageable);
 }

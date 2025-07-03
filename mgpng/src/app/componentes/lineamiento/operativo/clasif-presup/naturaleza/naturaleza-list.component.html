@@ -1,0 +1,58 @@
+<div class="position-relative">
+  <div class="card p-4" [class.opacity-50]="loading">
+    <!-- Encabezado institucional mejorado -->
+    <div class="mb-4">
+      <div class="p-4 border-round-lg shadow-3 bg-primary text-white text-center" 
+           style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); line-height: 1.5;">
+        <div class="fw-bold mb-2" style="font-size: 2rem; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2)">
+          <i class="pi pi-building me-2"></i>
+          {{ encabezadoInstitucion }}
+        </div>
+        <div class="fw-semibold mb-2" style="font-size: 1.25rem; color: #dce775;">
+          {{ encabezadoSub }}
+        </div>
+        <div class="mb-3 text-uppercase" style="font-size: 1.1rem; letter-spacing: 1.5px; font-weight: 500;">
+          {{ encabezadoTitulo }}
+        </div>
+        <div class="fst-italic opacity-90" style="font-size: 1rem;">
+          <i class="pi pi-calendar me-2"></i>
+          {{ encabezadoFecha }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de título y botón -->
+    <div class="flex justify-content-between align-items-center mb-4">
+      <h2 class="m-0 text-900" style="font-weight: 600; letter-spacing: 0.5px;">NATURALEZAS</h2>
+      <button pButton pRipple type="button" label="Nuevo" icon="pi pi-plus" 
+              class="p-button-success hover:shadow-2" 
+              style="border-radius: 6px; padding: 0.75rem 1.25rem;"
+              (click)="createNaturaleza()">
+      </button>
+    </div>
+
+    <!-- Tabla genérica con estilos mejorados -->
+    <app-generic-table 
+      [data]="naturalezaList" 
+      [config]="tableConfig" 
+      [loading]="loading" 
+      [totalRecords]="totalRecords"
+      (onPageChange)="onPageChange($event)"
+      styleClass="green-table compact-table"
+      (onSearch)="onSearch($event)"
+      (onSortChange)="onSortChange($event)">
+    </app-generic-table>
+  </div>
+
+  <!-- Spinner centrado -->
+  <app-spinner *ngIf="loading" class="centered-spinner"></app-spinner>
+</div>
+
+<!-- Componentes de PrimeNG -->
+<p-toast position="top-right" [breakpoints]="{'400px': {width: '90%', right: '20px'}}"></p-toast>
+<p-confirmDialog 
+  [style]="{width: '500px', borderRadius: '8px', border: '1px solid #2e7d32'}" 
+  [baseZIndex]="10000"
+  rejectButtonStyleClass="p-button-text"
+  acceptButtonStyleClass="p-button-success">
+</p-confirmDialog>

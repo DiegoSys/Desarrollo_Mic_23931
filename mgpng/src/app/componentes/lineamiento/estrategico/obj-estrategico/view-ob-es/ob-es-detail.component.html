@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="obEs; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Objetivo Estratégico'"
+      [subtitle]="'Visualizando Objetivo Estratégico: ' + (obEs?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

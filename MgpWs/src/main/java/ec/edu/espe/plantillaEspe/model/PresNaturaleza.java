@@ -15,6 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "UZKTPRESNATURALEZA")
 public class PresNaturaleza {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTPRESNATURALEZA_ID")
@@ -26,7 +27,7 @@ public class PresNaturaleza {
     @Column(name = "UZKTPRESNATURALEZA_NAME", length = 360)
     private String nombre;
 
-    @Column(name = "UZKTPRESNATURALEZA_DESC", length = 360)
+    @Column(name = "UZKTPRESNATURALEZA_DESC", length = 1000)
     private String descripcion;
 
     @Column(name = "UZKTPRESNATURALEZA_USER_CREA", length = 60)

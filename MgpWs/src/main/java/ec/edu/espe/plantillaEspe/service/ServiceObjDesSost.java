@@ -55,15 +55,18 @@ public class ServiceObjDesSost implements IServiceObjDesSost {
     }
 
     @Override
-    public Page<DtoObjDesSost> findAllActivos(Pageable pageable) {
+    public Page<DtoObjDesSost> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
             return daoObjDesSost.findByEstado(Estado.A, pageable)
                     .map(this::mapToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los Objetivo de desarrollo sostenible activos paginados.", e);
+        } else {
+            List<DtoObjDesSost> objetivos = daoObjDesSost.findByEstado(Estado.A).stream()
+                    .map(this::mapToDto)
+                    .toList();
+            return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(objetivos, searchCriteria, pageable);
         }
     }
 

@@ -81,14 +81,25 @@ public class ServiceEje implements IServiceEje {
     }
 
     @Override
-    public Page<DtoEje> findAllActivos(Pageable pageable) {
+    public Page<DtoEje> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoEje.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los ejes paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoEje.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los ejes paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoEje> ejes = daoEje.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(ejes, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los ejes activos.", e);
+            }
         }
     }
     

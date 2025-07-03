@@ -1,0 +1,378 @@
+@import 'src/assets/layout/styles/layout/layout';
+
+$institutional-color: #28a745;
+$institutional-dark: #218838;
+$institutional-light: #d4edda;
+$border-color: #e0e0e0;
+$text-dark: #333;
+$text-medium: #666;
+$text-light: #888;
+$bg-light: #f8f9fa;
+
+.preview-card {
+  position: relative;
+  overflow: visible;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  outline: none;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &.card-small {
+    min-height: 200px;
+    padding: 1rem;
+  }
+
+  &.card-medium {
+    min-height: 280px;
+    padding: 1.5rem;
+  }
+
+  // Estilos para drag and drop
+  &.draggable-card {
+    cursor: grab;
+    
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // Estilos específicos para vista dual
+  &.dual-view-card {
+    border-radius: 8px;
+    min-height: auto;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    
+    &.available-card {
+      border-left: 3px solid #17a2b8;
+    }
+    
+    &.associated-card {
+      border-left: 3px solid $institutional-color;
+    }
+  }
+
+  .card-hover-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 5;
+    border-radius: 12px;
+    transition: all 0.2s;
+    pointer-events: none;
+  }
+
+  .card-hover-actions {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 10;
+    transform: translate(-50%, -50%);
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+
+    .btn-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: $text-dark;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .icon-action-bg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        
+        i {
+          font-size: 1rem;
+          color: $text-dark;
+        }
+      }
+
+      &:hover, &:focus {
+        background: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+        .icon-action-bg i {
+          color: $institutional-color;
+        }
+      }
+
+      &.btn-danger:hover, &.btn-danger:focus {
+        .icon-action-bg i {
+          color: #dc3545;
+        }
+      }
+
+      &.btn-edit:hover, &.btn-edit:focus {
+        .icon-action-bg i {
+          color: #ffc107;
+        }
+      }
+    }
+  }
+
+  &:hover, &:focus {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+
+    .card-hover-overlay {
+      display: flex;
+    }
+    
+    .card-hover-actions {
+      display: flex;
+    }
+  }
+
+  // No hover effects para dual view
+  &.dual-view-card:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.card-top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.card-code {
+  font-weight: 600;
+  color: $institutional-dark;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  background: $institutional-light;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+.card-status {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+
+  &.activo {
+    color: $institutional-color;
+    background: $institutional-light;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+  }
+
+  &.inactivo {
+    color: #dc3545;
+    background: #f8d7da;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  i {
+    font-size: 0.8rem;
+  }
+}
+
+// Información específica de secciones
+.section-order-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: $institutional-color;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  
+  i {
+    font-size: 0.9rem;
+  }
+}
+
+.typology-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: $text-medium;
+  margin-bottom: 0.5rem;
+  
+  i {
+    color: $institutional-color;
+    font-size: 0.9rem;
+  }
+}
+
+.dual-view-indicator {
+  margin-bottom: 0.5rem;
+  
+  .indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    
+    &.available {
+      color: #0c5460;
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+    }
+    
+    &.associated {
+      color: #155724;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    
+    i {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: $text-medium;
+    background: $bg-light;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    
+    i {
+      color: $institutional-color;
+      font-size: 0.7rem;
+    }
+  }
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.meta-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: $text-light;
+    line-height: 1.4;
+
+    i {
+      color: $institutional-color;
+      width: 1rem;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Indicador de drag
+.drag-indicator {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: $text-light;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .preview-card {
+    &.card-medium {
+      min-height: 240px;
+      padding: 1rem;
+    }
+    
+    .card-hover-actions {
+      .btn-icon {
+        width: 2rem;
+        height: 2rem;
+        
+        .icon-action-bg i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+  
+  .card-top-section {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+// Animaciones
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInActions {
+  from { 
+    opacity: 0; 
+    transform: translate(-50%, -60%) scale(0.8);
+  }
+  to { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.card-hover-overlay {
+  animation: fadeInOverlay 0.2s ease;
+}
+
+.card-hover-actions {
+  animation: fadeInActions 0.2s ease;
+}

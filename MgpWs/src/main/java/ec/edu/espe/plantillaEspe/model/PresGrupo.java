@@ -28,7 +28,7 @@ public class PresGrupo {
     @Column(name = "UZKTPRESGRUPO_NAME", length = 360)
     private String nombre;
 
-    @Column(name = "UZKTPRESGRUPO_DESC", length = 360)
+    @Column(name = "UZKTPRESGRUPO_DESC", length = 1000)
     private String descripcion;
 
     @Column(name = "UZKTPRESGRUPO_USER_CREA", length = 60)

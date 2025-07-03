@@ -13,15 +13,13 @@
   background: white;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
-  padding: 1.5rem;
-  max-width: 1000px;
-  margin: 2rem auto;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 1.5rem auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .form-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid var(--primary-color);
@@ -30,22 +28,25 @@
     color: var(--primary-color);
     font-size: 1.5rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
+    margin: 0;
   }
 }
 
 .form-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.5rem 2rem;
 
-  &.cols-1 { grid-template-columns: repeat(1, 1fr); }
-  &.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  &.cols-3 { grid-template-columns: repeat(3, 1fr); }
-  &.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  &.cols-1 { grid-template-columns: 1fr; }
+  &.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  &.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  &.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .form-field {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 
   &.full-width {
     grid-column: 1 / -1;
@@ -66,6 +67,7 @@
   border-radius: 6px;
   min-height: 44px;
   transition: all 0.3s ease;
+  position: relative;
 
   &:focus {
     outline: none;
@@ -75,6 +77,22 @@
 
   &.ng-invalid.ng-touched {
     border-color: var(--error-color);
+  }
+}
+
+.p-dropdown {
+  position: relative;
+  
+  .p-dropdown-trigger {
+    position: absolute;
+    right: 8px;
+    min-width: 120px;
+  }
+
+  .date-range-separator {
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 0 0.5rem;
   }
 }
 
@@ -122,5 +140,52 @@ textarea.form-control {
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+.p-multiselect-panel .p-multiselect-items {
+  max-width: 98vw !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.p-multiselect-panel .p-multiselect-item {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+  font-size: 0.8em !important;
+  box-sizing: border-box;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--primary-color);
+
+  h2 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .code-display {
+    white-space: nowrap;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 1.5rem;
+    padding: 0.3rem 1.1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto; // <-- Esto lo pone al final de la cabecera
   }
 }

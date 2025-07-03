@@ -1,6 +1,8 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -11,7 +13,13 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "UZKTSUBPROGRAMA")
+@Table(
+    name = "UZKTSUBPROGRAMA",
+    uniqueConstraints = @UniqueConstraint(columnNames = {
+        "UZKTSUBPROGRAMA_CODE", 
+        "UZKTPROGRAMA_ID"
+    })
+)
 public class SubPrograma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +27,7 @@ public class SubPrograma {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UZKTPROGRAMA_CODE")
+    @JoinColumn(name = "UZKTPROGRAMA_ID", referencedColumnName = "UZKTPROGRAMA_ID", nullable = false)
     private Programa programa;
 
     @Column(name = "UZKTSUBPROGRAMA_CODE", length = 60, nullable = false)
@@ -32,7 +40,11 @@ public class SubPrograma {
     private String descripcion;
 
     @Column(name = "UZKTSUBPROGRAMA_STATUS", length = 6)
-    private String estado;
+    private Estado estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTSUBPROGRAMA_ALINEACION")
+    private TipoAlineacion alineacion;
 
     @Column(name = "UZKTSUBPROGRAMA_USER_CREA", length = 60)
     private String usuarioCreacion;
@@ -51,6 +63,6 @@ public class SubPrograma {
     private Date fechaModificacion;
 
     @ToString.Exclude  // Excluir del toString para evitar recursión
-    @OneToMany(mappedBy = "subprograma", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "subprograma", fetch = FetchType.LAZY , cascade = CascadeType.ALL)
     private List<Proyecto> proyectos = new ArrayList<>();
 }

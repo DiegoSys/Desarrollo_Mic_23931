@@ -1,0 +1,74 @@
+<div class="card">
+    <p-table
+        #dt
+        [value]="data"
+        dataKey="id"
+        [rows]="rows"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [loading]="loading"
+        [paginator]="true"
+        [globalFilterFields]="globalFilterFields"
+        [tableStyle]="{ 'min-width': '75rem', 'font-size': '0.92rem' }"
+        styleClass="p-datatable-sm"
+    >
+        <ng-template pTemplate="caption">
+            <div class="flex justify-content-end mb-2">
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input 
+                        pInputText 
+                        type="text" 
+                        (input)="filterGlobal($event, dt)" 
+                        placeholder="Buscar en toda la tabla..." 
+                    />
+                </span>
+            </div>
+        </ng-template>
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let col of columns" [pSortableColumn]="col.field" style="font-size:0.92rem;">
+                    {{ col.header }}
+                    <p-sortIcon [field]="col.field"></p-sortIcon>
+                </th>
+            </tr>
+            <tr>
+                <th *ngFor="let col of columns">
+                    <p-columnFilter 
+                        [type]="col.filterType || 'text'" 
+                        [field]="col.field" 
+                        [placeholder]="'Filtrar ' + col.header"
+                        styleClass="w-100"
+                        [showMenu]="false"
+                        [showOperator]="false"
+                    >
+                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                            <input 
+                                pInputText 
+                                type="text" 
+                                [value]="value" 
+                                (input)="filterInput($event, filter)" 
+                                [placeholder]="'Filtrar ' + col.header"
+                                style="width: 100%; min-width: 120px; font-size:0.92rem;"
+                            />
+                        </ng-template>
+                    </p-columnFilter>
+                </th>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td *ngFor="let col of columns" style="font-size:0.92rem;">
+                    {{ resolveFieldData(row, col.field) }}
+                </td>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td [attr.colspan]="columns.length" class="text-center">No se encontraron registros</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

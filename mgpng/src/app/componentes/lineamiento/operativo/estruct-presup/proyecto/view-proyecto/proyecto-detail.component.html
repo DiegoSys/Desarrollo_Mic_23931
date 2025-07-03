@@ -1,0 +1,25 @@
+<div>
+  <ng-container *ngIf="proyecto; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Proyecto'"
+      [subtitle]="'Visualizando Proyecto: ' + (proyecto?.codigo || '')"
+      [icon]="'pi pi-briefcase'"
+      [fields]="viewFields"
+      (cancel)="onBack()"
+      [showCancelButton]="true">
+
+      <hr style="border: none; border-top: 2px solid #2e7d32; margin: 1.5rem 0;">
+
+      <app-actividad-list
+        [proyectoId]="proyecto?.id"
+        [loading]="loading">
+      </app-actividad-list>
+
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

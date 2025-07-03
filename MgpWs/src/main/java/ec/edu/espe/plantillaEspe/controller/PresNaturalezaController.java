@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de naturalezas presupuestarias.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar naturalezas,
+ * así como para obtener listados y paginación de naturalezas.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/presnaturaleza")
@@ -29,6 +39,12 @@ public class PresNaturalezaController {
         this.service = service;
     }
 
+    /**
+     * Obtiene una naturaleza por su código.
+     *
+     * @param codigo Código de la naturaleza.
+     * @return Naturaleza encontrada o error si no se encuentra.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,10 +63,15 @@ public class PresNaturalezaController {
         }
     }
 
+    /**
+     * Obtiene una lista de todas las naturalezas activas.
+     *
+     * @return Lista de naturalezas activas.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
-            List<DtoPresNaturaleza> naturalezas = service.findAll();
+            List<DtoPresNaturaleza> naturalezas = service.findAllActivos();
             return ResponseEntity.ok(naturalezas);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -59,25 +80,40 @@ public class PresNaturalezaController {
         }
     }
 
+    /**
+     * Obtiene una página de naturalezas activas, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de naturalezas activas.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
         }
-
         if (size <= 0) {
             return badRequest("El tamaño de página debe ser mayor a cero.");
         }
-
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoPresNaturaleza> naturalezas = service.findAllActivos(pageable);
+            Page<DtoPresNaturaleza> naturalezas = service.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(naturalezas);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +122,13 @@ public class PresNaturalezaController {
         }
     }
 
+    /**
+     * Crea una nueva naturaleza.
+     *
+     * @param naturaleza Datos de la naturaleza.
+     * @param authHeader Cabecera de autorización.
+     * @return Naturaleza creada.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoPresNaturaleza naturaleza,
@@ -101,6 +144,14 @@ public class PresNaturalezaController {
         }
     }
 
+    /**
+     * Actualiza una naturaleza existente.
+     *
+     * @param codigo     Código de la naturaleza.
+     * @param naturaleza Datos de la naturaleza.
+     * @param authHeader Cabecera de autorización.
+     * @return Naturaleza actualizada.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +171,13 @@ public class PresNaturalezaController {
         }
     }
 
+    /**
+     * Elimina una naturaleza por su código.
+     *
+     * @param codigo     Código de la naturaleza.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta vacía si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
         @PathVariable String codigo,

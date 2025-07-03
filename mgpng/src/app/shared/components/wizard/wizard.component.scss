@@ -1,0 +1,46 @@
+.wizard-container {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid #eee;
+
+  button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:first-child {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    &:nth-child(2) {
+      background-color: #28a745;
+      color: white;
+    }
+
+    &:last-child {
+      background-color: #28a745;
+      color: white;
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:disabled {
+      background-color: #e9ecef;
+      color: #6c757d;
+      cursor: not-allowed;
+    }
+  }
+}

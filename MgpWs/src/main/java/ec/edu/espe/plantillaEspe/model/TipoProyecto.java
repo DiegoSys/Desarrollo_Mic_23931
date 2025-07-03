@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
+import ec.edu.espe.plantillaEspe.dto.Estado;
 
 import java.util.*;
 
 @Data
 @Entity
-@Table(name = "UZKTTIPOPROYEC")
+@Table(name = "UZKTTIPOPROYEC") 
 public class TipoProyecto {
     private static final long serialVersionUID = 1L;
 
@@ -21,6 +22,15 @@ public class TipoProyecto {
     @Column(name = "UZKTTIPOPROYEC_CODE", nullable = false, unique = true)
     private String codigo;
 
+
+
+    @Column(name = "UZKTTIPOPROYEC_NOMBRE")
+    private String nombre;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTTIPOPROYEC_STATUS")
+    private Estado estado;
+    
     @Column(name = "UZKTTIPOPROYEC_FEC_CREA")
     @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.DATE)

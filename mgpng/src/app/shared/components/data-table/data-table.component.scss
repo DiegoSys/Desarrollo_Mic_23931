@@ -1,0 +1,70 @@
+/* Estilos para la tarjeta */
+.card {
+    padding: 1rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 
+                0 1px 1px 0 rgba(0, 0, 0, 0.14), 
+                0 1px 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Estilos para las banderas */
+.flag {
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+}
+
+/* Estilos para los iconos de verificación */
+.pi-check-circle,
+.pi-times-circle {
+    font-size: 1.2rem;
+}
+
+/* Ajustes para los filtros */
+.p-input-icon-left {
+    width: 100%;
+}
+
+
+:host ::ng-deep .p-column-filter-clear {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+/* --- ESTILO TABLA --- */
+:host ::ng-deep .p-table,
+:host ::ng-deep .p-datatable-table {
+    border-collapse: collapse !important;
+    border: 2px solid #bdbdbd !important; /* Borde externo visible y un poco más grueso */
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    font-size: 0.85rem;
+}
+:host ::ng-deep .p-table th,
+:host ::ng-deep .p-table td,
+:host ::ng-deep .p-datatable-table th,
+:host ::ng-deep .p-datatable-table td {
+    border: 1px solid #e0e0e0 !important; /* Bordes internos finos */
+    background: #fff !important;
+    color: #222;
+    font-size: 0.85rem;
+    padding: 0.38rem 0.7rem !important;
+}
+:host ::ng-deep .p-table thead tr:first-child th,
+:host ::ng-deep .p-datatable-table thead tr:first-child th {
+    background: #f7f7f7 !important;
+    font-weight: 600;
+    color: #222;
+    text-align: center;
+}
+:host ::ng-deep .p-table thead tr:nth-child(2) th,
+:host ::ng-deep .p-datatable-table thead tr:nth-child(2) th {
+    background: #fff !important;
+}
+:host ::ng-deep .p-table tbody tr:hover,
+:host ::ng-deep .p-datatable-table tbody tr:hover {
+    background: #f7f7f7 !important;
+}
+

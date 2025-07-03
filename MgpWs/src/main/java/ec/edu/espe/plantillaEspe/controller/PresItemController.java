@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de items presupuestarios.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar items,
+ * así como para obtener listados y paginación de items.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/presitem")
@@ -29,6 +39,12 @@ public class PresItemController {
         this.service = service;
     }
 
+    /**
+     * Obtiene un item por su código.
+     *
+     * @param codigo Código del item.
+     * @return Item encontrado o error si no se encuentra.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,10 +63,15 @@ public class PresItemController {
         }
     }
 
+    /**
+     * Obtiene una lista de todos los items activos.
+     *
+     * @return Lista de items activos.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
-            List<DtoPresItem> presItems = service.findAll();
+            List<DtoPresItem> presItems = service.findAllActivos();
             return ResponseEntity.ok(presItems);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -59,12 +80,23 @@ public class PresItemController {
         }
     }
 
-    @GetMapping
+    /**
+     * Obtiene una página de items activos, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de items activos.
+     */
+    @GetMapping("/list/paginated")
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -75,9 +107,15 @@ public class PresItemController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoPresItem> presItems = service.findAllActivos(pageable);
+            Page<DtoPresItem> presItems = service.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(presItems);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +124,63 @@ public class PresItemController {
         }
     }
 
+    /**
+     * Obtiene una página de items filtrados por el código de subgrupo.
+     *
+     * @param codigo        Código del subgrupo.
+     * @param page          Número de página.
+     * @param size          Tamaño de página.
+     * @param sort          Campo de ordenamiento.
+     * @param direction     Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de items filtrados por subgrupo.
+     */
+    @GetMapping("/subgrupo/{codigo}")
+    public ResponseEntity<?> findByPresSubgrupoCodigo(
+            @PathVariable String codigo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
+
+        if (codigo == null || codigo.isEmpty()) {
+            return badRequest("El código del subgrupo no puede ser nulo o vacío.");
+        }
+
+        if (page < 0) {
+            return badRequest("El número de página no puede ser negativo.");
+        }
+
+        if (size <= 0) {
+            return badRequest("El tamaño de página debe ser mayor a cero.");
+        }
+
+        try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
+            Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+            Page<DtoPresItem> presItems = service.findByPresSubgrupo_Codigo(codigo, pageable, searchCriteria);
+            return ResponseEntity.ok(presItems);
+        } catch (DataValidationException e) {
+            return badRequest(e.getMessage());
+        } catch (Exception e) {
+            return internalServerError("Ocurrió un error interno al obtener los items por subgrupo paginados.");
+        }
+    }
+
+    /**
+     * Crea un nuevo item.
+     *
+     * @param presItem   Datos del item.
+     * @param authHeader Cabecera de autorización.
+     * @return Item creado.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoPresItem presItem,
@@ -101,6 +196,14 @@ public class PresItemController {
         }
     }
 
+    /**
+     * Actualiza un item existente.
+     *
+     * @param codigo     Código del item.
+     * @param presItem   Datos del item.
+     * @param authHeader Cabecera de autorización.
+     * @return Item actualizado.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +223,13 @@ public class PresItemController {
         }
     }
 
+    /**
+     * Elimina un item por su código.
+     *
+     * @param codigo     Código del item.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta vacía si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
         @PathVariable String codigo,

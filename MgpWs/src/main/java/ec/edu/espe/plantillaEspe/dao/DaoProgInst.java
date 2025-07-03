@@ -11,13 +11,35 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Interfaz que define las operaciones de acceso a datos para la entidad ModelUzktproginst.
- * Proporciona métodos para gestionar los programas institucionales.
+ * Interfaz para operaciones de acceso a datos de la entidad {@link ProgInst}.
+ * Permite buscar programas institucionales por código y filtrar por estado,
+ * con soporte para paginación.
  *
  * @author ITS
  */
 public interface DaoProgInst extends JpaRepository<ProgInst, Long> {
+    /**
+     * Busca un programa institucional por su código.
+     *
+     * @param codigo Código del programa.
+     * @return Un Optional con el programa encontrado, si existe.
+     */
     Optional<ProgInst> findByCodigo(String codigo);
+
+    /**
+     * Obtiene una lista de programas institucionales filtrados por estado.
+     *
+     * @param estado Estado del programa.
+     * @return Lista de programas con el estado especificado.
+     */
     List<ProgInst> findByEstado(Estado estado);
+
+    /**
+     * Obtiene una página de programas institucionales filtrados por estado.
+     *
+     * @param estado   Estado del programa.
+     * @param pageable Información de paginación.
+     * @return Página de programas con el estado especificado.
+     */
     Page<ProgInst> findByEstado(Estado estado, Pageable pageable);
 }

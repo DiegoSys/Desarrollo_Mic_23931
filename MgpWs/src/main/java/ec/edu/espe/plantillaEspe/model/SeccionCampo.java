@@ -3,6 +3,8 @@ package ec.edu.espe.plantillaEspe.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
 import java.util.Date;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
@@ -21,13 +23,18 @@ public class SeccionCampo {
     @Column(name = "UZKTSECCIONES_CAM_CODE", length = 60)
     private String codigo;
 
+    @ToString.Exclude  // Excluir del toString para evitar recursión
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UZKTSECCIONES_CODE", referencedColumnName = "UZKTSECCIONES_CODE")
     private Seccion seccion;
 
+    @ToString.Exclude  // Excluir del toString para evitar recursión
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UZKTCAMPOS_CODE", referencedColumnName = "UZKTCAMPOS_CODE")
     private Campo campo;
+
+    @Column(name = "UUZKTSECCIONES_CAM_ORDEN")
+    private Long orden;
 
     @Column(name = "UZKTSECCIONES_CAM_USER_CREA", length = 60)
     private String usuarioCreacion;

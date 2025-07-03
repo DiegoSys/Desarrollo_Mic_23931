@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="estrategia; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Estrategia del PND'"
+      [subtitle]="'Visualizando Estrategia del PND: ' + (estrategia?.codigo || '')"
+      [icon]="'pi pi-bullseye'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

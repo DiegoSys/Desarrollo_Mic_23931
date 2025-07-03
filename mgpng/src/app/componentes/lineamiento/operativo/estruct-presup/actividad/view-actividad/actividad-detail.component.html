@@ -1,0 +1,18 @@
+<div>
+  <ng-container *ngIf="actividad; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Actividad'"
+      [subtitle]="'Visualizando Actividad: ' + (actividad?.codigo || '')"
+      [icon]="'pi pi-check-square'"
+      [fields]="viewFields"
+      (cancel)="onBack()"
+      [showCancelButton]="true">
+
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

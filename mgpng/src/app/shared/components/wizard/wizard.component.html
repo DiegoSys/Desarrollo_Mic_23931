@@ -1,0 +1,8 @@
+<div class="wizard-container">
+  <ng-content></ng-content>
+  <div class="wizard-actions" *ngIf="steps">
+    <button *ngIf="activeIndex > 0" (click)="previous()">Anterior</button>
+    <button *ngIf="activeIndex < steps.length - 1" (click)="next()">Siguiente</button>
+    <button *ngIf="activeIndex === steps.length - 1" (click)="complete()">Finalizar</button>
+  </div>
+</div>

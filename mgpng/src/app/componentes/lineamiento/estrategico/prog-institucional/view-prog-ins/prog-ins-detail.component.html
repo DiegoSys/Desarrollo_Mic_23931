@@ -1,0 +1,16 @@
+<div>
+  <ng-container *ngIf="progIns; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Programa Institucional de la Meta'"
+      [subtitle]="'Visualizando Programa Institucional: ' + (progIns?.codigo || '')"
+      [icon]="'pi pi-briefcase'"
+      [fields]="viewFields"
+      [backRoute]="'../'">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

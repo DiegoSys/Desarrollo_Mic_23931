@@ -1,0 +1,23 @@
+<div>
+  <ng-container *ngIf="subGrupo; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Subgrupo'"
+      [subtitle]="'Visualizando Subgrupo: ' + (subGrupo?.codigo || '')"
+      [icon]="'pi pi-users'"
+      [fields]="viewFields"
+      (cancel)="onCancel()"
+      [showCancelButton]="true"
+    >
+      <!-- Línea separadora visual -->
+      <hr style="border: none; border-top: 2px solid #2e7d32; margin: 1.5rem 0;">
+
+      <!-- Sección de items relacionados como en grupo -->
+      <app-item-list [codigoSubGrupo]="subGrupo?.codigo"></app-item-list>
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

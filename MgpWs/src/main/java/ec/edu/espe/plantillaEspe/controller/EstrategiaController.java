@@ -14,9 +14,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.V1_API_VERSION;
 
+/**
+ * Controlador REST para la gestión de estrategias.
+ * Proporciona endpoints para consultar, crear, actualizar y eliminar estrategias,
+ * así como para obtener listados y paginación de estrategias.
+ *
+ * Maneja validaciones y errores comunes, devolviendo respuestas adecuadas.
+ *
+ * @author ITS
+ */
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(V1_API_VERSION + "/estrategia")
@@ -29,6 +39,12 @@ public class EstrategiaController {
         this.serviceEstrategia = serviceEstrategia;
     }
 
+    /**
+     * Obtiene una estrategia por su código.
+     *
+     * @param codigo Código de la estrategia.
+     * @return La estrategia encontrada o un error si no existe.
+     */
     @GetMapping("/{codigo}")
     public ResponseEntity<?> findByCodigo(@PathVariable String codigo) {
         if (codigo == null || codigo.isEmpty()) {
@@ -47,6 +63,11 @@ public class EstrategiaController {
         }
     }
 
+    /**
+     * Obtiene una lista de todas las estrategias activas.
+     *
+     * @return Lista de estrategias activas.
+     */
     @GetMapping("/list")
     public ResponseEntity<?> findAll() {
         try {
@@ -59,12 +80,23 @@ public class EstrategiaController {
         }
     }
 
+    /**
+     * Obtiene una página de estrategias activas, ordenadas y paginadas, con filtros opcionales.
+     *
+     * @param page           Número de página.
+     * @param size           Tamaño de página.
+     * @param sort           Campo de ordenamiento.
+     * @param direction      Dirección de ordenamiento (asc/desc).
+     * @param searchCriteria Filtros de búsqueda adicionales.
+     * @return Página de estrategias activas.
+     */
     @GetMapping
     public ResponseEntity<?> findAllPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) Map<String, String> searchCriteria) {
 
         if (page < 0) {
             return badRequest("El número de página no puede ser negativo.");
@@ -75,9 +107,15 @@ public class EstrategiaController {
         }
 
         try {
+            if (searchCriteria != null) {
+                searchCriteria.remove("page");
+                searchCriteria.remove("size");
+                searchCriteria.remove("sort");
+                searchCriteria.remove("direction");
+            }
             Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-            Page<DtoEstrategia> estrategias = serviceEstrategia.findAllActivos(pageable);
+            Page<DtoEstrategia> estrategias = serviceEstrategia.findAllActivos(pageable, searchCriteria);
             return ResponseEntity.ok(estrategias);
         } catch (DataValidationException e) {
             return badRequest(e.getMessage());
@@ -86,6 +124,13 @@ public class EstrategiaController {
         }
     }
 
+    /**
+     * Crea una nueva estrategia.
+     *
+     * @param estrategia Datos de la estrategia.
+     * @param authHeader Cabecera de autorización.
+     * @return Estrategia creada.
+     */
     @PostMapping("/add")
     public ResponseEntity<?> create(
             @RequestBody DtoEstrategia estrategia,
@@ -101,6 +146,14 @@ public class EstrategiaController {
         }
     }
 
+    /**
+     * Actualiza una estrategia existente.
+     *
+     * @param codigo     Código de la estrategia.
+     * @param estrategia Datos de la estrategia.
+     * @param authHeader Cabecera de autorización.
+     * @return Estrategia actualizada.
+     */
     @PutMapping("/update/{codigo}")
     public ResponseEntity<?> update(
             @PathVariable String codigo,
@@ -120,6 +173,13 @@ public class EstrategiaController {
         }
     }
 
+    /**
+     * Elimina una estrategia por su código.
+     *
+     * @param codigo     Código de la estrategia.
+     * @param authHeader Cabecera de autorización.
+     * @return Respuesta sin contenido si se elimina correctamente.
+     */
     @DeleteMapping("/{codigo}")
     public ResponseEntity<?> delete(
             @PathVariable String codigo,
@@ -130,7 +190,6 @@ public class EstrategiaController {
 
         try {
             String token = extractToken(authHeader);
-
             serviceEstrategia.delete(codigo, token);
             return ResponseEntity.noContent().build();
         } catch (DataValidationException e) {

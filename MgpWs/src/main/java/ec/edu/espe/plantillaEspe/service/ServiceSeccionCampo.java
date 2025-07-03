@@ -72,6 +72,34 @@ public class ServiceSeccionCampo implements IServiceSeccionCampo {
     }
 
     @Override
+    public Page<DtoSeccionCampo> findByCodigoSeccion(String codigoSeccion, Pageable pageable) {
+        validateCodigo(codigoSeccion);
+        if (pageable == null) {
+            throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        }
+        try {
+            return daoSeccionCampo.findBySeccionCodigo(codigoSeccion, pageable)
+                    .map(this::convertToDto);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener las relaciones por código de sección paginadas.", e);
+        }
+    }
+
+    @Override
+    public Page<DtoSeccionCampo> findByCodigoCampo(String codigoCampo, Pageable pageable) {
+        validateCodigo(codigoCampo);
+        if (pageable == null) {
+            throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        }
+        try {
+            return daoSeccionCampo.findByCampoCodigo(codigoCampo, pageable)
+                    .map(this::convertToDto);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener las relaciones por código de campo paginadas.", e);
+        }
+    }
+
+    @Override
     @Transactional
     public DtoSeccionCampo save(DtoSeccionCampo dtoSeccionCampo, String accessToken) {
         validateDto(dtoSeccionCampo);
@@ -80,21 +108,22 @@ public class ServiceSeccionCampo implements IServiceSeccionCampo {
             throw new DataValidationException("Ya existe una relación sección-campo con el código especificado.");
         }
 
-        if (!daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk()).isPresent()) {
-            throw new DataValidationException("No existe una sección con el código: " + dtoSeccionCampo.getCodigoSeccionFk());
-        }
+        Seccion seccion = daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk())
+                .orElseThrow(() -> new DataValidationException("No existe una sección con el código: "
+                        + dtoSeccionCampo.getCodigoSeccionFk()));
 
-        if (!daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk()).isPresent()) {
-            throw new DataValidationException("No existe un campo con el código: " + dtoSeccionCampo.getCodigoCampoFk());
-        }
+        Campo campo = daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk())
+                .orElseThrow(() -> new DataValidationException("No existe un campo con el código: "
+                        + dtoSeccionCampo.getCodigoCampoFk()));
 
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
         String username = (String) userInfo.get("name");
 
         SeccionCampo seccionCampo = new SeccionCampo();
         seccionCampo.setCodigo(dtoSeccionCampo.getCodigo());
-        seccionCampo.setSeccion(daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk()).get());
-        seccionCampo.setCampo(daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk()).get());
+        seccionCampo.setSeccion(seccion);
+        seccionCampo.setCampo(campo);
+        seccionCampo.setOrden(dtoSeccionCampo.getOrden());
         seccionCampo.setFechaCreacion(new Date());
         seccionCampo.setUsuarioCreacion(username);
 
@@ -110,17 +139,21 @@ public class ServiceSeccionCampo implements IServiceSeccionCampo {
                 .orElseThrow(() -> new DataValidationException("La relación sección-campo con el código especificado no existe."));
 
         if (dtoSeccionCampo.getCodigoSeccionFk() != null) {
-            if (!daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk()).isPresent()) {
-                throw new DataValidationException("No existe una sección con el código: " + dtoSeccionCampo.getCodigoSeccionFk());
-            }
-            seccionCampoActual.setSeccion(daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk()).get());
+            Seccion seccion = daoSeccion.findByCodigo(dtoSeccionCampo.getCodigoSeccionFk())
+                    .orElseThrow(() -> new DataValidationException("No existe una sección con el código: "
+                            + dtoSeccionCampo.getCodigoSeccionFk()));
+            seccionCampoActual.setSeccion(seccion);
         }
 
         if (dtoSeccionCampo.getCodigoCampoFk() != null) {
-            if (!daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk()).isPresent()) {
-                throw new DataValidationException("No existe un campo con el código: " + dtoSeccionCampo.getCodigoCampoFk());
-            }
-            seccionCampoActual.setCampo(daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk()).get());
+            Campo campo = daoCampo.findByCodigo(dtoSeccionCampo.getCodigoCampoFk())
+                    .orElseThrow(() -> new DataValidationException("No existe un campo con el código: "
+                            + dtoSeccionCampo.getCodigoCampoFk()));
+            seccionCampoActual.setCampo(campo);
+        }
+
+        if (dtoSeccionCampo.getOrden() != null) {
+            seccionCampoActual.setOrden(dtoSeccionCampo.getOrden());
         }
 
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
@@ -166,6 +199,9 @@ public class ServiceSeccionCampo implements IServiceSeccionCampo {
             throw new DataValidationException("El código del campo es requerido");
         }
 
+        if (dto.getOrden() == null || dto.getOrden() <= 0) {
+            throw new DataValidationException("El orden es requerido y debe ser mayor a cero");
+        }
     }
 
     private DtoSeccionCampo convertToDto(SeccionCampo seccionCampo) {
@@ -177,6 +213,7 @@ public class ServiceSeccionCampo implements IServiceSeccionCampo {
         dto.setCodigo(seccionCampo.getCodigo());
         dto.setCodigoSeccionFk(seccionCampo.getSeccion().getCodigo());
         dto.setCodigoCampoFk(seccionCampo.getCampo().getCodigo());
+        dto.setOrden(seccionCampo.getOrden());
         dto.setFechaCreacion(seccionCampo.getFechaCreacion());
         dto.setUsuarioCreacion(seccionCampo.getUsuarioCreacion());
         dto.setFechaModificacion(seccionCampo.getFechaModificacion());

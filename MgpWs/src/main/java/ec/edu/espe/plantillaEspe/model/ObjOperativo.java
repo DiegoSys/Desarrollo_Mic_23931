@@ -25,7 +25,7 @@ public class ObjOperativo {
     @Column(name = "UZKTOBJESTR_CODE_FK", length = 60)
     private String codigoEstrFk;
 
-    @Column(name = "UZKTOBJOPER_DESC", length = 360)
+    @Column(name = "UZKTOBJOPER_DESC", length = 1000)
     private String descripcion;
 
     @Column(name = "UZKTOBJOPER_STATUS", length = 6)

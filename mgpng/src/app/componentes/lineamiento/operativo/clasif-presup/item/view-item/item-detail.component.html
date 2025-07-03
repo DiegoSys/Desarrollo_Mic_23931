@@ -1,0 +1,17 @@
+<div>
+  <ng-container *ngIf="item; else loadingTemplate">
+    <app-generic-view
+      [loading]="loading"
+      [title]="'Detalle Item'"
+      [subtitle]="'Visualizando Item: ' + (item?.codigo || '')"
+      [icon]="'pi pi-box'"
+      [fields]="viewFields"
+      (cancel)="onCancel()"
+      [showCancelButton]="true">
+    </app-generic-view>
+  </ng-container>
+
+  <ng-template #loadingTemplate>
+    <app-spinner *ngIf="loading"></app-spinner>
+  </ng-template>
+</div>

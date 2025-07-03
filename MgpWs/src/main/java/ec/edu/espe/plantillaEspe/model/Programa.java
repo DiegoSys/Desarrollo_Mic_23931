@@ -1,6 +1,8 @@
 package ec.edu.espe.plantillaEspe.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoAlineacion;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -28,7 +30,11 @@ public class Programa {
     private String descripcion;
 
     @Column(name = "UZKTPROGRAMA_STATUS", length = 6)
-    private String estado;
+    private Estado estado;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTPROGRAMA_ALINEACION")
+    private TipoAlineacion alineacion;
 
     @Column(name = "UZKTPROGRAMA_USER_CREA", length = 60)
     private String usuarioCreacion;
@@ -48,7 +54,7 @@ public class Programa {
 
     //relación con Subprograma
     @ToString.Exclude  // Excluir del toString para evitar recursión
-    @OneToMany(mappedBy = "programa", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "programa", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<SubPrograma> subProgramas = new ArrayList<>();
     
 }

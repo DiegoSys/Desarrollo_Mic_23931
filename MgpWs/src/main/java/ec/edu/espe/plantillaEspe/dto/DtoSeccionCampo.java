@@ -8,6 +8,7 @@ public class DtoSeccionCampo
 {
     private Long id;
     private String codigo;
+    private Long orden;
     private String usuarioCreacion;
     private Date fechaCreacion;
     private String usuarioModificacion;

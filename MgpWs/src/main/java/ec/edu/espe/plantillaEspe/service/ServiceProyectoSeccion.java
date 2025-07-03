@@ -72,6 +72,20 @@ public class ServiceProyectoSeccion implements IServiceProyectoSeccion {
     }
 
     @Override
+    public Page<DtoProyectoSeccion> findByCodigoProyecto(String codigoProyecto, Pageable pageable) {
+        validateCodigo(codigoProyecto);
+        if (pageable == null) {
+            throw new DataValidationException("Los parámetros de paginación son requeridos.");
+        }
+        try {
+            return daoProyectoSeccion.findByTipoProyectoCodigo(codigoProyecto, pageable)
+                    .map(this::convertToDto);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener las relaciones por código de proyecto paginadas.", e);
+        }
+    }
+
+    @Override
     @Transactional
     public DtoProyectoSeccion save(DtoProyectoSeccion dtoProyectoSeccion, String accessToken) {
         System.out.println(dtoProyectoSeccion.getCodigoProyectoFK() + " " + dtoProyectoSeccion.getCodigoSeccionFk());
@@ -98,6 +112,7 @@ public class ServiceProyectoSeccion implements IServiceProyectoSeccion {
         proyectoSeccion.setCodigo(dtoProyectoSeccion.getCodigo());
         proyectoSeccion.setTipoProyecto(tipoProyecto);
         proyectoSeccion.setSeccion(seccion);
+        proyectoSeccion.setOrden(dtoProyectoSeccion.getOrden());
         proyectoSeccion.setFechaCreacion(new Date());
         proyectoSeccion.setUsuarioCreacion(username);
 
@@ -124,6 +139,10 @@ public class ServiceProyectoSeccion implements IServiceProyectoSeccion {
                     .orElseThrow(() -> new DataValidationException("No existe una sección con el código: "
                             + dtoProyectoSeccion.getCodigoSeccionFk()));
             proyectoSeccionActual.setSeccion(seccion);
+        }
+
+        if (dtoProyectoSeccion.getOrden() != null) {
+            proyectoSeccionActual.setOrden(dtoProyectoSeccion.getOrden());
         }
 
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
@@ -168,6 +187,10 @@ public class ServiceProyectoSeccion implements IServiceProyectoSeccion {
         if (dto.getCodigoSeccionFk() == null || dto.getCodigoSeccionFk().isEmpty()) {
             throw new DataValidationException("El código de la sección es requerido");
         }
+
+        if (dto.getOrden() == null || dto.getOrden() <= 0) {
+            throw new DataValidationException("El orden es requerido y debe ser mayor a cero");
+        }
     }
 
     private DtoProyectoSeccion convertToDto(ProyectoSeccion proyectoSeccion) {
@@ -179,6 +202,7 @@ public class ServiceProyectoSeccion implements IServiceProyectoSeccion {
         dto.setCodigo(proyectoSeccion.getCodigo());
         dto.setCodigoProyectoFK(proyectoSeccion.getTipoProyecto().getCodigo());
         dto.setCodigoSeccionFk(proyectoSeccion.getSeccion().getCodigo());
+        dto.setOrden(proyectoSeccion.getOrden());
         dto.setFechaCreacion(proyectoSeccion.getFechaCreacion());
         dto.setUsuarioCreacion(proyectoSeccion.getUsuarioCreacion());
         dto.setFechaModificacion(proyectoSeccion.getFechaModificacion());

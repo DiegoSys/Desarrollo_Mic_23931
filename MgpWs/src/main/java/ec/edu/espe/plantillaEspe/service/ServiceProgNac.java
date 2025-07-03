@@ -79,14 +79,25 @@ public class ServiceProgNac implements IServiceProgNac {
     }
 
     @Override
-    public Page<DtoProgNac> findAllActivos(Pageable pageable) {
+    public Page<DtoProgNac> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoProgNac.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los Programas Nacionales paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoProgNac.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los Programas Nacionales paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoProgNac> progNacs = daoProgNac.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(progNacs, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los Programas Nacionales activos.", e);
+            }
         }
     }
 

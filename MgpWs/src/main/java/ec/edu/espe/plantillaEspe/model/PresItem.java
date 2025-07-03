@@ -26,7 +26,7 @@ public class PresItem {
     @Column(name = "UZKTPRESITEM_NAME", length = 360)
     private String nombre;
 
-    @Column(name = "UZKTPRESITEM_DESC", length = 360)
+    @Column(name = "UZKTPRESITEM_DESC", length = 1000)
     private String descripcion;
 
     @Column(name = "UZKTPRESITEM_USER_CREA", length = 60)

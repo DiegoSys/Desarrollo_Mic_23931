@@ -1,0 +1,30 @@
+<div class="position-relative">
+  <div class="card p-4" [class.opacity-50]="loading">
+    <div class="flex justify-content-between align-items-center mb-4">
+      <h2 class="m-0">SUBPROGRAMAS</h2>
+      <div class="flex gap-2">
+        <button pButton pRipple type="button" label="Nuevo" icon="pi pi-plus" class="p-button-success"
+          (click)="createSubPrograma()" [disabled]="loading || existeSubProgramaDefault()">
+        </button>
+        <button pButton pRipple type="button" label="No Aplica(Default)" icon="pi pi-plus" class="p-button-info"
+          (click)="crearDefault()" [disabled]="loading || !codigoPrograma || existeSubProgramaDefault()">
+        </button>
+      </div>
+    </div>
+
+    <app-generic-table
+      [data]="subProgramaList"
+      [config]="tableConfig"
+      [loading]="loading"
+      [totalRecords]="totalRecords"
+      (onPageChange)="onPageChange($event)"
+      (onSearch)="onSearch($event)"
+      (onSortChange)="onSortChange($event)">
+    </app-generic-table>
+  </div>
+
+  <app-spinner *ngIf="loading" class="centered-spinner"></app-spinner>
+</div>
+
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog [style]="{width: '500px'}" [baseZIndex]="10000"></p-confirmDialog>

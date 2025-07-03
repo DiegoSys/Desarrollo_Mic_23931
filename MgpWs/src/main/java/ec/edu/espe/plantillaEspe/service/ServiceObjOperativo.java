@@ -79,17 +79,28 @@ public class ServiceObjOperativo implements IServiceObjOperativo {
     }
 
     @Override
-    public Page<DtoObjOperativo> findAllActivos(Pageable pageable) {
+    public Page<DtoObjOperativo> findAllActivos(Pageable pageable, Map<String, String> searchCriteria) {
         if (pageable == null) {
             throw new DataValidationException("Los parámetros de paginación son requeridos.");
         }
-        try {
-            return daoObjOperativo.findByEstado(Estado.A, pageable).map(this::convertToDto);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener los Objetivos Operativos paginados.", e);
+        if (searchCriteria == null || searchCriteria.isEmpty()) {
+            try {
+                return daoObjOperativo.findByEstado(Estado.A, pageable).map(this::convertToDto);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al obtener los Objetivos Operativos paginados.", e);
+            }
+        } else {
+            try {
+                List<DtoObjOperativo> objetivos = daoObjOperativo.findByEstado(Estado.A).stream()
+                        .map(this::convertToDto)
+                        .toList();
+                return ec.edu.espe.plantillaEspe.util.GenericSearchUtil.search(objetivos, searchCriteria, pageable);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al filtrar y paginar los Objetivos Operativos activos.", e);
+            }
         }
     }
-
+    
     @Override
     public DtoObjOperativo save(DtoObjOperativo dto, String accessToken) {
         validateDtoObjOperativo(dto);

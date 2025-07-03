@@ -1,0 +1,89 @@
+<div class="poa-container">
+    <div class="gestion-poa-card">
+        <!-- Wizard para formulario multi-paso -->
+        <app-wizard *ngIf="!showOdsTable" (stepChange)="onStepChange($event)" (completed)="onWizardComplete()">
+            <app-wizard-step title="Seleccionar ODS">
+                <app-selector-table
+                    [items]="entities['ods'].data"
+                    [selected]="entities['ods'].selected"
+                    [labelField]="entities['ods'].labelField"
+                    [descField]="entities['ods'].descField"
+                    [loading]="entities['ods'].loading"
+                    [totalRecords]="entities['ods'].totalRecords"
+                    [page]="entities['ods'].page"
+                    [size]="entities['ods'].size"
+                    [multiple]="entities['ods'].multiple"
+                    [searchValue]="searchValues['ods']"
+                    (searchValueChange)="onSearchValueChange('ods', $event)"
+                    (selectionChange)="onSelectionChange('ods', $event)"
+                    (onPageChange)="onPageChange('ods', $event)"
+                    (onSearch)="onSearch('ods', $event)"
+                    (onSortChange)="onSortChange('ods', $event)">
+                </app-selector-table>
+            </app-wizard-step>
+
+            <app-wizard-step title="Seleccionar Ítems">
+                <app-selector-table
+                    [items]="entities['item'].data"
+                    [selected]="entities['item'].selected"
+                    [labelField]="entities['item'].labelField"
+                    [descField]="entities['item'].descField"
+                    [loading]="entities['item'].loading"
+                    [totalRecords]="entities['item'].totalRecords"
+                    [page]="entities['item'].page"
+                    [size]="entities['item'].size"
+                    [multiple]="entities['item'].multiple"
+                    [searchValue]="searchValues['item']"
+                    (searchValueChange)="onSearchValueChange('item', $event)"
+                    (selectionChange)="onSelectionChange('item', $event)"
+                    (onPageChange)="onPageChange('item', $event)"
+                    (onSearch)="onSearch('item', $event)"
+                    (onSortChange)="onSortChange('item', $event)">
+                </app-selector-table>
+            </app-wizard-step>
+
+            <app-wizard-step title="Seleccionar Actividades">
+                <app-selector-table
+                    [items]="entities['actividad'].data"
+                    [selected]="entities['actividad'].selected"
+                    [labelField]="entities['actividad'].labelField"
+                    [descField]="entities['actividad'].descField"
+                    [loading]="entities['actividad'].loading"
+                    [totalRecords]="entities['actividad'].totalRecords"
+                    [page]="entities['actividad'].page"
+                    [size]="entities['actividad'].size"
+                    [multiple]="entities['actividad'].multiple"
+                    [searchValue]="searchValues['actividad']"
+                    (searchValueChange)="onSearchValueChange('actividad', $event)"
+                    (selectionChange)="onSelectionChange('actividad', $event)"
+                    (onPageChange)="onPageChange('actividad', $event)"
+                    (onSearch)="onSearch('actividad', $event)"
+                    (onSortChange)="onSortChange('actividad', $event)">
+                </app-selector-table>
+            </app-wizard-step>
+
+            <app-wizard-step title="Resumen de selección">
+                <app-summary-card
+                    title="ODS seleccionados"
+                    [items]="entities['ods'].selected"
+                    labelField="codigo"
+                    descField="descripcion">
+                </app-summary-card>
+                <app-summary-card
+                    title="Ítems seleccionados"
+                    [items]="entities['item'].selected"
+                    labelField="codigo"
+                    descField="descripcion">
+                </app-summary-card>
+                <app-summary-card
+                    title="Actividades seleccionadas"
+                    [items]="entities['actividad'].selected"
+                    labelField="codigo"
+                    descField="descripcion">
+                </app-summary-card>
+            </app-wizard-step>
+        </app-wizard>
+        <!-- Tabla de ODS -->
+        <router-outlet *ngIf="showOdsTable"></router-outlet>
+    </div>
+</div>
