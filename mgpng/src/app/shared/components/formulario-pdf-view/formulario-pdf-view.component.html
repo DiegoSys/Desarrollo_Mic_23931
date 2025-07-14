@@ -1,0 +1,133 @@
+<div class="form-container" role="form" aria-label="Formulario institucional paso a paso">
+  <button pButton pRipple type="button" icon="pi pi-arrow-left" label="Volver" class="p-button-secondary p-button-sm mb-3" (click)="onDeseleccionarFormulario()" aria-label="Volver"></button>
+
+  <!-- ENCABEZADO INSTITUCIONAL -->
+  <header class="form-header-institucional" role="banner">
+    <div class="header-logo">
+      <img src="assets/layout/images/logo.png" alt="Logo Institucional" />
+    </div>
+    <div class="header-title">
+      <h1 tabindex="0">INFORME DE PROYECTO</h1>
+      <h2 tabindex="0">{{ formulario?.nombre }}</h2>
+    </div>
+    <div class="header-right">
+      <div class="header-code">
+        <label for="codigo-form">Código:</label>
+        <div class="header-value" id="codigo-form">{{ formulario?.codigo }}</div>
+      </div>
+      <div class="header-date">
+        <label for="fecha-form">Fecha:</label>
+        <div class="header-value" id="fecha-form">{{ today | date:'dd/MM/yyyy' }}</div>
+      </div>
+    </div>
+  </header>
+  <div class="header-divider" aria-hidden="true"></div>
+
+  <!-- INDICADOR DE PASOS -->
+  <nav class="wizard-steps" *ngIf="secciones.length > 1" aria-label="Pasos del formulario">
+    <div *ngFor="let seccion of secciones; let i = index"
+         class="wizard-step"
+         [class.active]="i === currentStep"
+         [class.completed]="i < currentStep"
+         [attr.aria-current]="i === currentStep ? 'step' : null">
+      <span class="step-number" [attr.aria-label]="'Paso ' + (i + 1)">
+        <ng-container *ngIf="i < currentStep; else notDone">
+          <i class="pi pi-check"></i>
+        </ng-container>
+        <ng-template #notDone>{{ i + 1 }}</ng-template>
+      </span>
+      <span class="step-title" [title]="seccion.nombre">{{ seccion.nombre }}</span>
+    </div>
+  </nav>
+
+  <!-- SECCIÓN ACTUAL DEL FORMULARIO (WIZARD) -->
+  <main class="form-sections" aria-live="polite">
+    <section class="form-section" *ngIf="secciones.length > 0" [attr.aria-label]="'Sección ' + (currentStep + 1) + ': ' + secciones[currentStep]?.nombre">
+      <header class="section-header">
+        <div class="section-number">{{ currentStep + 1 }}.</div>
+        <h3 class="section-title">{{ secciones[currentStep]?.nombre }}</h3>
+      </header>
+      <div class="section-fields form-grid-modern">
+        <ng-container *ngFor="let campo of camposPorSeccion[secciones[currentStep]?.codigo] || []">
+          <div class="form-field">
+            <div class="field-matrix">
+              <label [for]="campo.codigo" class="field-label">
+                {{ campo.label }}
+              </label>
+              <div class="field-control">
+                <ng-container [ngSwitch]="campo.tipoCampo">
+                  <!-- TXT -->
+                  <input *ngSwitchCase="'TXT'" [id]="campo.codigo" type="text" class="form-control" [attr.aria-label]="campo.label" />
+                  <!-- AREA -->
+                  <textarea *ngSwitchCase="'AREA'" [id]="campo.codigo" class="form-control" rows="3" [attr.aria-label]="campo.label"></textarea>
+                  <!-- NUM -->
+                  <input *ngSwitchCase="'NUM'" [id]="campo.codigo" type="number" class="form-control" [attr.aria-label]="campo.label" />
+                  <!-- DATE -->
+                  <input *ngSwitchCase="'DATE'" [id]="campo.codigo" type="date" class="form-control" [attr.aria-label]="campo.label" />
+                  <!-- SEL: Select simple -->
+                  <select *ngSwitchCase="'SEL'" [id]="campo.codigo" class="form-control" [attr.aria-label]="campo.label">
+                    <option value="">Seleccione...</option>
+                    <option *ngFor="let opt of getOpciones(campo)" [value]="opt">{{ opt }}</option>
+                  </select>
+                  <!-- SELM: Select múltiple -->
+                  <select *ngSwitchCase="'SELM'" [id]="campo.codigo" class="form-control" multiple [attr.aria-label]="campo.label">
+                    <option *ngFor="let opt of getOpciones(campo)" [value]="opt">{{ opt }}</option>
+                  </select>
+                  <!-- CHK: Checkbox -->
+                  <div *ngSwitchCase="'CHK'" class="checkbox-group">
+                    <ng-container *ngFor="let opt of getOpciones(campo); let i = index">
+                      <input type="checkbox" class="form-checkbox" [id]="campo.codigo + '_' + i" [name]="campo.codigo" [value]="opt" [attr.aria-label]="opt" />
+                      <label [for]="campo.codigo + '_' + i">{{ opt }}</label>
+                    </ng-container>
+                  </div>
+                  <!-- RADIO: Radio buttons -->
+                  <div *ngSwitchCase="'RADIO'" class="radio-group">
+                    <ng-container *ngFor="let opt of getOpciones(campo)">
+                      <input type="radio" class="form-radio" [id]="campo.codigo + '_' + opt" [name]="campo.codigo" [value]="opt" [attr.aria-label]="opt" />
+                      <label [for]="campo.codigo + '_' + opt">{{ opt }}</label>
+                    </ng-container>
+                  </div>
+                  <!-- FILE: Selector de archivos -->
+                  <div *ngSwitchCase="'FILE'" class="file-input-wrapper">
+                    <input type="file" class="form-file" [id]="campo.codigo" [attr.aria-label]="campo.label" />
+                  </div>
+                  <!-- TABLA: Usar field-preview para las tablas -->
+                  <div *ngSwitchCase="'TABLA'">
+                    <app-field-preview 
+                      [campo]="campo" 
+                      [showFieldInfo]="false"
+                      [showProperties]="false"
+                      [showLabel]="false"
+                      [isEditable]="true">
+                    </app-field-preview>
+                  </div>
+                  <!-- Default -->
+                  <div *ngSwitchDefault class="form-control">
+                    <input [id]="campo.codigo" type="text" class="form-control" [attr.aria-label]="campo.label" />
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+        <!-- MENSAJE PARA SECCIONES SIN CAMPOS -->
+        <div *ngIf="!camposPorSeccion[secciones[currentStep]?.codigo] || camposPorSeccion[secciones[currentStep]?.codigo].length === 0" class="no-fields-message">
+          <i class="pi pi-info-circle"></i> Esta sección no contiene campos
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MENSAJE PARA FORMULARIOS SIN SECCIONES -->
+  <div *ngIf="secciones.length === 0" class="empty-sections">
+    <i class="pi pi-exclamation-triangle"></i>
+    <p>Este formulario no tiene secciones configuradas</p>
+  </div>
+
+  <!-- BOTONES DE NAVEGACIÓN WIZARD -->
+  <nav class="wizard-nav" *ngIf="secciones.length > 1" aria-label="Navegación del formulario">
+    <button pButton pRipple type="button" label="Anterior" icon="pi pi-arrow-left" class="p-button-secondary p-button-sm" (click)="goToPreviousStep()" [disabled]="isFirstStep()" aria-label="Anterior"></button>
+    <button pButton pRipple type="button" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" class="p-button-primary p-button-sm" (click)="goToNextStep()" *ngIf="!isLastStep()" aria-label="Siguiente"></button>
+    <button pButton pRipple type="button" label="Finalizar" icon="pi pi-check" class="p-button-success p-button-sm" *ngIf="isLastStep()" aria-label="Finalizar"></button>
+  </nav>
+</div>

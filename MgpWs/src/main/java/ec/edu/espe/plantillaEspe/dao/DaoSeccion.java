@@ -5,6 +5,7 @@ import ec.edu.espe.plantillaEspe.model.Seccion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,4 +40,20 @@ public interface DaoSeccion extends JpaRepository<Seccion, Long> {
      * @return Página de secciones con el estado especificado.
      */
     Page<Seccion> findByEstado(Estado estado, Pageable pageable);
+
+    /**
+     * Busca una sección por su código.
+     *
+     * @return Un Optional con la sección encontrada, si existe.
+     */
+    @Query("SELECT s.codigo FROM Seccion s WHERE s.codigo LIKE 'SEC-%'")
+    List<String> findAllCodigosLikeSec();
+
+    /**
+     * Verifica si existe una sección con el código especificado.
+     *
+     * @param codigo Código de la sección.
+     * @return true si existe una sección con el código, false en caso contrario.
+     */ 
+    boolean existsByCodigo(String codigo);
 }

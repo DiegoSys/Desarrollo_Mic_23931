@@ -28,17 +28,21 @@ import { SpinnerService } from 'src/app/spinner/spinner.service';
 // Componente
 import { GenericViewModule } from 'src/app/shared/components/generic-view/generic-view.module';
 import { GenericFormModule } from 'src/app/shared/components/generic-form/generic-form.module';
-import { FormBuildListComponent } from './form-build-list.component';
-import { CampoListComponent } from './campo/campo-list.component';
-
+import { BuilderViewComponent } from './builder-view/builder-view.component';
+import { GenericTableModule } from 'src/app/shared/components/generic-table/generic-table.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { DataTableComponent } from 'src/app/shared/components/data-table/data-table.component';
 import { SummaryCardComponent } from 'src/app/shared/components/summary-card/summary-card.component';
 import { PreviewCardComponent } from 'src/app/shared/components/preview-card/preview-card.component';
+import { FieldPreviewComponent } from 'src/app/shared/components/field-preview/field-preview.component';
+import { FormularioPdfViewComponent } from 'src/app/shared/components/formulario-pdf-view/formulario-pdf-view.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FieldPreviewService } from 'src/app/shared/components/field-preview/field-preview.service'
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    BuilderViewComponent
+  ],
   imports: [
     CommonModule,
     SharedModule,
@@ -63,16 +67,18 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     MessagesModule,
     FormBuildRoutingModule,
     SummaryCardComponent,
-    FormBuildListComponent,
-    CampoListComponent,
-    PreviewCardComponent
+    PreviewCardComponent,
+    GenericTableModule,
+    FieldPreviewComponent,
+    FormularioPdfViewComponent
   ],
   providers: [
     MensajeService, 
     ConfirmationService,
     MessageService,
     SpinnerService,
-    DatePipe
+    DatePipe,
+    FieldPreviewService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

@@ -19,7 +19,7 @@
     <!-- Barra de búsqueda -->
     <div class="selector-toolbar">
       <span class="search-wrapper">
-        <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Buscar..."
+        <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Buscar por Nombre"
           (ngModelChange)="onSearchInputChange($event)" class="selector-search-input" autocomplete="off" />
         <button type="button" (click)="handleSearch()" class="p-button-sm selector-search-btn" aria-label="Buscar">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -67,13 +67,6 @@
                 <input id="nombre" name="nombre" type="text" class="form-control" required
                   [(ngModel)]="formModel.nombre" maxlength="100" placeholder="Nombre del formulario">
               </div>
-            </div>
-
-            <div class="form-group">
-              <label for="descripcion">Descripción</label>
-              <textarea id="descripcion" name="descripcion" class="form-control"
-                [(ngModel)]="formModel.descripcion" maxlength="250"
-                placeholder="Descripción del formulario" rows="2"></textarea>
             </div>
 
             <!-- Información adicional solo en edición -->

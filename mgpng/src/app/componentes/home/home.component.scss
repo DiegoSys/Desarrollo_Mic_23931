@@ -1,0 +1,245 @@
+
+
+.home-container {
+  background: #fff;
+  padding: clamp(1.2rem, 4vw, 2.5rem) clamp(0.5rem, 4vw, 2rem);
+  max-width: 1200px;
+  width: 100%;
+  min-height: 70vh;
+  margin: 2rem auto;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px 0 rgba(60, 72, 88, 0.10), 0 1.5px 4px 0 rgba(60, 72, 88, 0.04);
+  border: 1px solid #e0e3ea;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.home-logo {
+  max-width: 180px;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 2px 8px rgba(67,160,71,0.08));
+}
+
+h1 {
+  color: #388e3c;
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.5px;
+}
+
+.home-title {
+  color: #263238;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2.2rem;
+  letter-spacing: 0.2px;
+}
+
+.dashboard-metrics {
+  display: flex;
+  gap: 2.2rem;
+  justify-content: center;
+  margin-bottom: 2.2rem;
+  flex-wrap: wrap;
+}
+.metric-card {
+  background: #e8f5e9;
+  border: 2px solid #43a047;
+  border-radius: 14px;
+  padding: 1.2rem 2.2rem;
+  min-width: 140px;
+  min-height: 120px;
+  color: #263238;
+  font-weight: 600;
+  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  box-shadow: 0 2px 12px 0 rgba(67,160,71,0.07);
+  transition: box-shadow 0.18s, border-color 0.18s, background 0.18s, color 0.18s;
+}
+.metric-card i {
+  font-size: 2.5rem;
+  color: #43a047;
+}
+.metric-value {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #388e3c;
+  line-height: 1.1;
+}
+.metric-label {
+  font-size: 1.05rem;
+  color: #37474f;
+  font-weight: 500;
+}
+
+.home-actions {
+  display: flex;
+  gap: 2.2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2.2rem;
+}
+
+.home-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #e8f5e9;
+  border: 2px solid #43a047;
+  border-radius: 14px;
+  padding: 1.2rem 2.2rem;
+  min-width: 120px;
+  min-height: 120px;
+  color: #263238;
+  font-weight: 600;
+  font-size: 1.08rem;
+  text-decoration: none;
+  box-shadow: 0 2px 12px 0 rgba(67,160,71,0.07);
+  transition: box-shadow 0.18s, border-color 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+}
+.home-action i {
+  font-size: 2.3rem;
+  color: #43a047;
+  margin-bottom: 0.7rem;
+  transition: color 0.18s;
+}
+.home-action:hover, .home-action:focus {
+  background: #43a047;
+  color: #fff;
+  border-color: #388e3c;
+  box-shadow: 0 4px 24px 0 rgba(67,160,71,0.13);
+}
+.home-action:hover i, .home-action:focus i {
+  color: #fff;
+}
+
+.home-info {
+  background: #f6f7f9;
+  border-radius: 12px;
+  padding: 1.1rem 1.5rem;
+  margin-top: 1.2rem;
+  color: #37474f;
+  font-size: 1.08rem;
+  max-width: 600px;
+  box-shadow: 0 2px 8px 0 rgba(67,160,71,0.04);
+  text-align: left;
+}
+.home-info h3 {
+  color: #388e3c;
+  font-size: 1.15rem;
+  margin-bottom: 0.7rem;
+  font-weight: 700;
+}
+.home-info ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 1.01rem;
+}
+.home-info li {
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+.dashboard-modules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2.2rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.dashboard-card {
+  background: #e8f5e9;
+  border: 2px solid #43a047;
+  border-radius: 16px;
+  padding: 2rem 1.2rem 1.2rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 12px 0 rgba(67,160,71,0.07);
+  transition: box-shadow 0.18s, border-color 0.18s, background 0.18s, color 0.18s;
+  text-align: center;
+  min-height: 220px;
+}
+.dashboard-card:hover, .dashboard-card:focus {
+  background: #43a047;
+  color: #fff;
+  border-color: #388e3c;
+  box-shadow: 0 4px 24px 0 rgba(67,160,71,0.13);
+}
+.dashboard-card i {
+  font-size: 2.7rem;
+  color: #43a047;
+  margin-bottom: 1.1rem;
+  transition: color 0.18s;
+}
+.dashboard-card:hover i, .dashboard-card:focus i {
+  color: #fff;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.card-desc {
+  font-size: 1.01rem;
+  color: #37474f;
+}
+.dashboard-card:hover .card-desc, .dashboard-card:focus .card-desc {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .dashboard-metrics, .home-actions {
+    gap: 1.2rem;
+  }
+  .metric-card, .home-action {
+    padding: 1rem 1.2rem;
+    min-width: 100px;
+    min-height: 100px;
+    font-size: 1rem;
+  }
+}
+@media (max-width: 600px) {
+  .home-container {
+    padding: 0.5rem 0.1rem;
+    border-radius: 8px;
+    margin: 0.5rem auto;
+    min-width: 0;
+    min-height: 40vh;
+  }
+  .home-logo {
+    max-width: 90px;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  .home-title {
+    font-size: 1rem;
+  }
+  .dashboard-metrics, .home-actions {
+    gap: 0.7rem;
+  }
+  .metric-card, .home-action {
+    padding: 0.7rem 0.7rem;
+    min-width: 80px;
+    min-height: 80px;
+    font-size: 0.95rem;
+  }
+  .home-info {
+    font-size: 0.97rem;
+    padding: 0.7rem 0.3rem;
+    max-width: 98vw;
+  }
+}

@@ -5,7 +5,7 @@ import { ProyectoSeccionService } from './proyecto-seccion.service';
 import { CampoService } from '../campo/campo.service';
 import { SeccionCampoService } from '../campo/seccion-campo.service';
 import { Seccion, Campo } from '../models/form-build.model';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { FieldPreviewService } from 'src/app/shared/components/field-preview/field-preview.service';import { MessageService, ConfirmationService } from 'primeng/api';
 import { PaginatorState } from 'primeng/paginator';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -78,6 +78,7 @@ export class SeccionListComponent implements OnInit {
     private proyectoSeccionService: ProyectoSeccionService,
     private campoService: CampoService,
     private seccionCampoService: SeccionCampoService,
+    private fieldPreviewService: FieldPreviewService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     public spinnerService: SpinnerService,
@@ -451,9 +452,7 @@ export class SeccionListComponent implements OnInit {
   handleSearch() {
     if (this.searchValue.trim()) {
       this.searchCriteria = { 
-        nombre: this.searchValue.trim(),
-        codigo: this.searchValue.trim(),
-        descripcion: this.searchValue.trim()
+        nombre: this.searchValue.trim()
       };
     } else {
       this.searchCriteria = {};
@@ -631,21 +630,11 @@ export class SeccionListComponent implements OnInit {
 
   getSectionFieldsForPreview(sectionCode: string): string {
     if (this.sectionFieldsLoading[sectionCode]) {
-      return 'Cargando campos...';
+      return 'pi-spin pi-spinner:Cargando campos...';
     }
     
     const fields = this.sectionFields[sectionCode];
-    if (!fields || fields.length === 0) {
-      return 'No hay campos';
-    }
-    
-    if (fields.length === 1) {
-      return `1 campo: ${fields[0].nombre}`;
-    } else if (fields.length <= 3) {
-      return `${fields.length} campos: ${fields.map(f => f.nombre).join(', ')}`;
-    } else {
-      return `${fields.length} campos: ${fields.slice(0, 2).map(f => f.nombre).join(', ')} y ${fields.length - 2} más`;
-    }
+    return this.fieldPreviewService.getSectionFieldsPreview(fields);
   }
 
   getSectionFieldsDescription(sectionCode: string): string {
@@ -654,11 +643,7 @@ export class SeccionListComponent implements OnInit {
     }
     
     const fields = this.sectionFields[sectionCode];
-    if (!fields || fields.length === 0) {
-      return 'No contiene campos';
-    }
-    
-    return `Contiene ${fields.length} campo${fields.length === 1 ? '' : 's'}`;
+    return this.fieldPreviewService.getSectionFieldsDescription(fields);
   }
 
   goToCampo(seccion: Seccion) {

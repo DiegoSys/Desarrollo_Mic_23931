@@ -1,21 +1,17 @@
 package ec.edu.espe.plantillaEspe.model;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoConfiguracionTabla;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.*;
-
-import static ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA;
+import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "UZKTCAMPOS", schema = SHEMA)
+@Table(name = "UZKTCAMPOS", schema = ec.edu.espe.plantillaEspe.constant.GlobalConstants.SHEMA)
 public class Campo {
-    private static final long serialVersionUID = 1L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UZKTCAMPOS_ID")
@@ -24,20 +20,61 @@ public class Campo {
     @Column(name = "UZKTCAMPOS_CODE", length = 60, unique = true)
     private String codigo;
 
-    @Column(name = "UZKTCAMPOS_NOMBRE")
-    private String nombre;
+    @Column(name = "UZKTCAMPOS_LABEL")
+    private String label;
 
-    @Column(name = "UZKTCAMPOS_DESC")
-    private String descripcion;
+    @Column(name = "UZKTCAMPOS_REQUERIDO")
+    private Boolean requerido;
+
+    @Column(name = "UZKTCAMPOS_SOLO_LECTURA")
+    private Boolean soloLectura;
+
+    @Column(name = "UZKTCAMPOS_MULTIPLE")
+    private Boolean esMultiple;
+
+    @Lob
+    @Column(name = "UZKTCAMPOS_OPCIONES")
+    private String opciones;
+
+    @Lob
+    @Column(name = "UZKTCAMPOS_COLUMNAS")
+    private String columnas;
+
+    @Lob
+    @Column(name = "UZKTCAMPOS_FILAS")
+    private String filas;
+
+    @Lob
+    @Column(name = "UZKTCAMPOS_EST_PERS")
+    private String estructuraTablaPersonalizada;
+
+    @Column(name = "UZKTCAMPOS_MUTABLE")
+    private Boolean esMutable;
+
+    @Column(name = "UZKTCAMPOS_MIN_FILAS")
+    private Integer minFilas;
+
+    @Column(name = "UZKTCAMPOS_MAX_FILAS")
+    private Integer maxFilas;
+
+    @Column(name = "UZKTCAMPOS_MIN_COLUMNAS")
+    private Integer minColumnas;
+
+    @Column(name = "UZKTCAMPOS_MAX_COLUMNAS")
+    private Integer maxColumnas;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "UZKTCAMPOS_TIPO_CONFIG_TABLA")
+    private TipoConfiguracionTabla tipoConfiguracionTabla;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "UZKTCAMPOS_STATUS")
     private Estado estado;
+
     @Column(name = "UZKTCAMPOS_USER_CREA", length = 60)
     private String usuarioCreacion;
 
     @Column(name = "UZKTCAMPOS_FEC_CREA")
-    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.DATE)
     private Date fechaCreacion;
 
@@ -45,21 +82,13 @@ public class Campo {
     private String usuarioModificacion;
 
     @Column(name = "UZKTCAMPOS_FEC_MOD")
-    @JsonFormat(pattern = "yyyy-MM-dd", shape = JsonFormat.Shape.STRING, timezone = JsonFormat.DEFAULT_TIMEZONE)
     @Temporal(TemporalType.DATE)
     private Date fechaModificacion;
 
-    @ToString.Exclude  // Excluir del toString para evitar recursión
-    @OneToMany(mappedBy = "campo", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SeccionCampo> seccionCampos = new ArrayList<>();
-
-    @ToString.Exclude  // Excluir del toString para evitar recursión
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UZKTTIPOCAMPO_CODE", referencedColumnName = "UZKTTIPOCAMPO_CODE")
     private TipoCampo tipoCampo;
 
-    @ToString.Exclude  // Excluir del toString para evitar recursión
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UZKTMATRIZ_ID", referencedColumnName = "UZKTMATRIZ_ID")
-    private Matriz matriz;
+    
 }

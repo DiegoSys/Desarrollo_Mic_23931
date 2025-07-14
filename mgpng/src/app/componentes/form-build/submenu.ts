@@ -14,5 +14,10 @@ export const subMenuBuild_Form = [
         label: 'Configuración de Campos',
         icon: 'pi pi-fw pi-sliders-h',
         routerLink: ['/formBuild/campo'],
+    },
+    {
+        label: 'Formularios Maquetados',
+        icon: 'pi pi-fw pi-table',
+        routerLink: ['/formBuild/lista'],
     }
 ];

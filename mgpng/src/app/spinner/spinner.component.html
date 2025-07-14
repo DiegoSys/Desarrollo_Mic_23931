@@ -1,7 +1,7 @@
     <div class="spinner-container">
+        <div class="spinner-overlay" *ngIf="isLoading"></div>
         <ngx-spinner  *ngIf="isLoading" color="rgba(25, 135, 84, 1)" type="ball-scale-multiple" [fullScreen]="false" size="medium" >
             <p class="loading"> <b>Espe</b>re</p>
         </ngx-spinner>
     </div>
-    <div class="spinner-overlay"></div>
 

@@ -14,6 +14,9 @@
     <button *ngIf="showEdit" class="btn-icon btn-edit" (click)="handleEdit($event)" title="Editar">
       <span class="icon-action-bg"><i class="pi pi-pencil"></i></span>
     </button>
+    <button *ngIf="showClone" class="btn-icon btn-clone" (click)="handleClone($event)" title="Clonar">
+      <span class="icon-action-bg"><i class="pi pi-copy"></i></span>
+    </button>
     <button *ngIf="showDelete && !isInDualView" class="btn-icon btn-danger" (click)="handleDelete($event)" title="Eliminar">
       <span class="icon-action-bg"><i class="pi pi-trash"></i></span>
     </button>
@@ -55,6 +58,202 @@
   </div>
 
   <div class="card-content">
+    <!-- Vista previa de campos cuando previewType es 'field' -->
+    <div *ngIf="previewType === 'field' && campo" class="field-preview-mini">
+      <div class="field-preview-header">
+        <div class="field-type-indicator" [attr.data-type]="campo.tipoCampo">
+          <i class="pi" [ngClass]="getFieldIcon(campo.tipoCampo)"></i>
+          <span>{{ getFieldTypeName(campo.tipoCampo) }}</span>
+        </div>
+      </div>
+      
+      <div class="field-preview-input">
+        <ng-container [ngSwitch]="campo.tipoCampo">
+          <!-- Campo de Texto -->
+          <input *ngSwitchCase="'TEXTO'" type="text" class="field-text-mini" [placeholder]="campo.label" disabled>
+          
+          <!-- Área de Texto -->
+          <textarea *ngSwitchCase="'AREA_TEXTO'" class="field-textarea-mini" rows="2" [placeholder]="campo.label" disabled></textarea>
+          
+          <!-- Selector Simple -->
+          <select *ngSwitchCase="'SELECTOR_SIMPLE'" class="field-select-mini" disabled>
+            <option>Seleccione una opción</option>
+            <option *ngFor="let opt of getFieldOptions(campo)" [value]="opt">{{ opt }}</option>
+          </select>
+          
+          <!-- Selector Múltiple -->
+          <div *ngSwitchCase="'SELECTOR_MULTIPLE'" class="field-multiselect-mini">
+            <div class="multi-select-header-mini">
+              <span>Seleccione opciones</span>
+              <i class="pi pi-chevron-down"></i>
+            </div>
+          </div>
+          
+          <!-- Campo Numérico -->
+          <input *ngSwitchCase="'NUMERICO'" type="number" class="field-number-mini" [placeholder]="campo.label" disabled>
+          
+          <!-- Campo de Fecha -->
+          <input *ngSwitchCase="'FECHA'" type="date" class="field-date-mini" disabled>
+          
+          <!-- Checkbox -->
+          <div *ngSwitchCase="'CHECKBOX'" class="field-checkbox-mini">
+            <div class="checkbox-item" *ngFor="let opt of getFieldOptions(campo)">
+              <input type="checkbox" disabled>
+              <span>{{ opt }}</span>
+            </div>
+          </div>
+          
+          <!-- Radio buttons -->
+          <div *ngSwitchCase="'RADIO'" class="field-radio-mini">
+            <div class="radio-item" *ngFor="let opt of getFieldOptions(campo)">
+              <input type="radio" disabled>
+              <span>{{ opt }}</span>
+            </div>
+          </div>
+          
+          <!-- Campo de Archivo -->
+          <div *ngSwitchCase="'ARCHIVO'" class="field-file-mini">
+            <input type="file" disabled>
+            <small>Seleccione un archivo</small>
+          </div>
+          
+          <!-- Tabla -->
+          <div *ngSwitchCase="'TABLA'" class="field-table-mini">
+            <!-- LABEL DEL CAMPO -->
+            <div class="field-label-mini" *ngIf="campo.label">
+              <strong>{{ campo.label }}</strong>
+            </div>
+            
+            <!-- Mostrar tipo de configuración -->
+            <div class="table-type-info" *ngIf="campo.tipoConfiguracionTabla">
+              <small>{{ getTableTypeText(campo.tipoConfiguracionTabla) }}</small>
+            </div>
+            
+            <div class="table-preview-mini">
+              <!-- SOLO_COLUMNAS -->
+              <table class="mini-table" *ngIf="campo.tipoConfiguracionTabla === 'SOLO_COLUMNAS'">
+                <thead>
+                  <tr>
+                    <th *ngFor="let col of campo.columnas?.slice(0, 3); let colIndex = index" class="mini-header">
+                      {{ col.nombre && col.nombre.trim() ? col.nombre : ('Columna ' + (colIndex + 1)) }}
+                    </th>
+                    <th *ngIf="campo.columnas?.length > 3" class="mini-header">...</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td *ngFor="let col of campo.columnas?.slice(0, 3)" class="mini-cell">
+                      <input type="text" disabled>
+                    </td>
+                    <td *ngIf="campo.columnas?.length > 3" class="mini-cell">...</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <!-- SOLO_FILAS -->
+              <table class="mini-table" *ngIf="campo.tipoConfiguracionTabla === 'SOLO_FILAS'">
+                <tbody>
+                  <tr *ngFor="let fila of campo.filas?.slice(0, 3); let rowIndex = index">
+                    <td class="mini-cell row-label">
+                      {{ fila.nombre && fila.nombre.trim() ? fila.nombre : ('Fila ' + (rowIndex + 1)) }}
+                    </td>
+                    <td class="mini-cell">
+                      <input type="text" disabled>
+                    </td>
+                  </tr>
+                  <tr *ngIf="campo.filas?.length > 3">
+                    <td colspan="2" class="mini-cell">...</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <!-- COLUMNAS_Y_FILAS -->
+              <table class="mini-table" *ngIf="campo.tipoConfiguracionTabla === 'COLUMNAS_Y_FILAS'">
+                <thead>
+                  <tr>
+                    <th class="mini-header"></th> <!-- Esquina vacía -->
+                    <th *ngFor="let col of campo.columnas?.slice(0, 2); let colIndex = index" class="mini-header">
+                      {{ col.nombre && col.nombre.trim() ? col.nombre : ('Columna ' + (colIndex + 1)) }}
+                    </th>
+                    <th *ngIf="campo.columnas?.length > 2" class="mini-header">...</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let fila of campo.filas?.slice(0, 2); let rowIndex = index">
+                    <td class="mini-cell row-label">
+                      {{ fila.nombre && fila.nombre.trim() ? fila.nombre : ('Fila ' + (rowIndex + 1)) }}
+                    </td>
+                    <td *ngFor="let col of campo.columnas?.slice(0, 2)" class="mini-cell">
+                      <input type="text" disabled>
+                    </td>
+                    <td *ngIf="campo.columnas?.length > 2" class="mini-cell">...</td>
+                  </tr>
+                  <tr *ngIf="campo.filas?.length > 2">
+                    <td class="mini-cell">...</td>
+                    <td *ngFor="let col of campo.columnas?.slice(0, 2)" class="mini-cell">...</td>
+                    <td *ngIf="campo.columnas?.length > 2" class="mini-cell">...</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <!-- TABLA_PERSONALIZADA -->
+              <table class="mini-table" *ngIf="campo.tipoConfiguracionTabla === 'TABLA_PERSONALIZADA'">
+                <thead *ngIf="campo.estructuraTablaPersonalizada?.headers?.length > 0">
+                  <tr>
+                    <th *ngFor="let header of campo.estructuraTablaPersonalizada.headers.slice(0, 3)" class="mini-header">
+                      {{ header.label || header.key }}
+                    </th>
+                    <th *ngIf="campo.estructuraTablaPersonalizada.headers.length > 3" class="mini-header">...</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of campo.estructuraTablaPersonalizada?.rows?.slice(0, 2); let rowIndex = index">
+                    <td *ngFor="let header of campo.estructuraTablaPersonalizada.headers.slice(0, 3)" class="mini-cell">
+                      <ng-container *ngIf="row.cells[header.key]?.type === 'label'">
+                        {{ row.cells[header.key]?.value }}
+                      </ng-container>
+                      <input *ngIf="row.cells[header.key]?.type === 'input'" type="text" disabled>
+                    </td>
+                    <td *ngIf="campo.estructuraTablaPersonalizada.headers.length > 3" class="mini-cell">...</td>
+                  </tr>
+                  <tr *ngIf="campo.estructuraTablaPersonalizada?.rows?.length > 2">
+                    <td [attr.colspan]="getColspan(campo.estructuraTablaPersonalizada.headers.length)" class="mini-cell">...</td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <!-- Tabla por defecto si no hay configuración -->
+              <table class="mini-table" *ngIf="!campo.tipoConfiguracionTabla">
+                <thead>
+                  <tr>
+                    <th class="mini-header">Columna 1</th>
+                    <th class="mini-header">Columna 2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mini-cell"><input type="text" disabled></td>
+                    <td class="mini-cell"><input type="text" disabled></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Campo por defecto -->
+          <input *ngSwitchDefault type="text" class="field-text-mini" [placeholder]="campo.label" disabled>
+        </ng-container>
+      </div>
+      
+      <!-- Indicadores de propiedades del campo -->
+      <div class="field-properties-mini" *ngIf="hasFieldProperties()">
+        <span *ngIf="campo.requerido === true" class="badge-mini badge-required">Requerido</span>
+        <span *ngIf="campo.soloLectura === true" class="badge-mini badge-readonly">Solo lectura</span>
+        <span *ngIf="campo.esMultiple === true" class="badge-mini badge-multiple">Múltiple</span>
+      </div>
+    </div>
+    
+    <!-- Contenido personalizado -->
     <ng-content></ng-content>
   </div>
 

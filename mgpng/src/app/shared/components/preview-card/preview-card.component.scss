@@ -129,6 +129,12 @@ $bg-light: #f8f9fa;
           color: #ffc107;
         }
       }
+
+      &.btn-clone:hover, &.btn-clone:focus {
+        .icon-action-bg i {
+          color: #17a2b8;
+        }
+      }
     }
   }
 
@@ -375,4 +381,280 @@ $bg-light: #f8f9fa;
 
 .card-hover-actions {
   animation: fadeInActions 0.2s ease;
+}
+
+/* Estilos para vista previa de campos en cards */
+.field-preview-mini {
+  padding: 0.5rem 0;
+  
+  .field-preview-header {
+    margin-bottom: 0.75rem;
+    
+    .field-type-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: $text-medium;
+      background: $bg-light;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid $border-color;
+      
+      i {
+        color: $institutional-color;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+    // AGREGAR ESTE ESTILO PARA EL LABEL
+  .field-label-mini {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: $bg-light;
+    border-radius: 3px;
+    border-left: 3px solid $institutional-color;
+  }
+  
+  .field-preview-input {
+    margin-bottom: 0.5rem;
+    
+    /* Estilos base para inputs mini */
+    input, select, textarea {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      background: #f9f9f9;
+      color: $text-medium;
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+    
+    /* Campos específicos */
+    .field-text-mini {
+      @extend input;
+    }
+    
+    .field-textarea-mini {
+      @extend input;
+      resize: none;
+      min-height: 2.5rem;
+    }
+    
+    .field-select-mini {
+      @extend input;
+    }
+    
+    .field-number-mini {
+      @extend input;
+      text-align: right;
+    }
+    
+    .field-date-mini {
+      @extend input;
+    }
+    
+    /* Selector múltiple mini */
+    .field-multiselect-mini {
+      .multi-select-header-mini {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.5rem;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        background: #f9f9f9;
+        font-size: 0.8rem;
+        color: $text-medium;
+        cursor: pointer;
+        
+        i {
+          font-size: 0.7rem;
+        }
+      }
+    }
+    
+    /* Checkbox mini */
+    .field-checkbox-mini {
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+        color: $text-medium;
+        
+        input[type="checkbox"] {
+          width: auto;
+          margin: 0;
+        }
+      }
+    }
+    
+    /* Radio mini */
+    .field-radio-mini {
+      .radio-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+        color: $text-medium;
+        
+        input[type="radio"] {
+          width: auto;
+          margin: 0;
+        }
+      }
+    }
+    
+    /* Archivo mini */
+    .field-file-mini {
+      input[type="file"] {
+        @extend input;
+        padding: 0.25rem;
+      }
+      
+      small {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.7rem;
+        color: $text-light;
+      }
+    }
+    
+    // AGREGAR ESTE ESTILO PARA EL LABEL
+  .field-label-mini {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: $bg-light;
+    border-radius: 3px;
+    border-left: 3px solid $institutional-color;
+  }
+  
+  // AGREGAR ESTOS ESTILOS PARA LA INFORMACIÓN DE TABLA
+  .table-type-info {
+    margin-bottom: 0.5rem;
+    
+    small {
+      color: $text-medium;
+      font-style: italic;
+      font-size: 0.7rem;
+      background: $bg-light;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      border: 1px solid $border-color;
+    }
+  }
+
+    /* Tabla mini */
+    .field-table-mini {
+      .table-preview-mini {
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        overflow: hidden;
+        
+        .mini-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.7rem;
+          
+          .mini-header {
+            background: $bg-light;
+            padding: 0.25rem 0.3rem;
+            border-right: 1px solid $border-color;
+            font-weight: 600;
+            color: $text-dark;
+            text-align: center;
+            
+            &:last-child {
+              border-right: none;
+            }
+          }
+          
+          .mini-cell {
+            padding: 0.2rem 0.3rem;
+            border-right: 1px solid $border-color;
+            border-bottom: 1px solid $border-color;
+            
+            &:last-child {
+              border-right: none;
+            }
+            
+            input {
+              width: 100%;
+              padding: 0.1rem 0.2rem;
+              border: none;
+              background: transparent;
+              font-size: 0.7rem;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /* Badges de propiedades */
+  .field-properties-mini {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    
+    .badge-mini {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.3rem;
+      border-radius: 10px;
+      font-weight: 500;
+      
+      &.badge-required {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+      }
+      
+      &.badge-readonly {
+        background: #e2e3e5;
+        color: #6c757d;
+        border: 1px solid #d6d8db;
+      }
+      
+      &.badge-multiple {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+    }
+  }
+}
+
+/* Responsive para vista previa de campos */
+@media (max-width: 768px) {
+  .field-preview-mini {
+    .field-preview-input {
+      .field-table-mini {
+        .table-preview-mini {
+          .mini-table {
+            font-size: 0.6rem;
+            
+            .mini-header,
+            .mini-cell {
+              padding: 0.15rem 0.2rem;
+            }
+          }
+        }
+      }
+    }
+  }
 }

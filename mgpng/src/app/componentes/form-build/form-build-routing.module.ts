@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { FormBuildListComponent } from './form-build-list.component';
 import { SeccionListComponent } from './seccion/seccion-list.component';
 import { CampoListComponent } from './campo/campo-list.component';
-
+import { BuilderViewComponent } from './builder-view/builder-view.component';
 const routes: Routes = [
     {
         path: '',
@@ -17,6 +17,10 @@ const routes: Routes = [
     {
         path: 'campo',
         component: CampoListComponent,
+    },
+    {
+        path: 'lista',
+        component: BuilderViewComponent,
     }
 
 ];

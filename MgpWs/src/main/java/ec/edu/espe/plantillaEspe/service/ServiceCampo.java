@@ -1,16 +1,18 @@
 package ec.edu.espe.plantillaEspe.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ec.edu.espe.plantillaEspe.config.security.UserInfoService;
 import ec.edu.espe.plantillaEspe.dao.DaoCampo;
 import ec.edu.espe.plantillaEspe.dao.DaoTipoCampo;
-import ec.edu.espe.plantillaEspe.dao.DaoMatriz;
 import ec.edu.espe.plantillaEspe.dao.DaoSeccionCampo;
 import ec.edu.espe.plantillaEspe.dto.DtoCampo;
 import ec.edu.espe.plantillaEspe.dto.Estado;
+import ec.edu.espe.plantillaEspe.dto.TipoConfiguracionTabla;
 import ec.edu.espe.plantillaEspe.exception.DataValidationException;
 import ec.edu.espe.plantillaEspe.model.Campo;
 import ec.edu.espe.plantillaEspe.model.TipoCampo;
-import ec.edu.espe.plantillaEspe.model.Matriz;
+import ec.edu.espe.plantillaEspe.model.SeccionCampo;
 import ec.edu.espe.plantillaEspe.service.IService.IServiceCampo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,18 +28,39 @@ public class ServiceCampo implements IServiceCampo {
 
     private final DaoCampo daoCampo;
     private final DaoTipoCampo daoTipoCampo;
-    private final DaoMatriz daoMatriz;
     private final UserInfoService userInfoService;
     private final DaoSeccionCampo daoSeccionCampo;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public ServiceCampo(DaoCampo daoCampo, DaoTipoCampo daoTipoCampo, DaoMatriz daoMatriz, UserInfoService userInfoService,
+    public ServiceCampo(DaoCampo daoCampo, DaoTipoCampo daoTipoCampo, UserInfoService userInfoService,
                         DaoSeccionCampo daoSeccionCampo) {
         this.daoCampo = daoCampo;
         this.daoTipoCampo = daoTipoCampo;
-        this.daoMatriz = daoMatriz;
         this.userInfoService = userInfoService;
         this.daoSeccionCampo = daoSeccionCampo;
+    }
+
+    private String generarCodigoUnico() {
+        List<String> codigos = daoCampo.findAllCodigosLikeCam();
+        int max = 0;
+        for (String codigo : codigos) {
+            if (codigo != null && codigo.startsWith("CAM-")) {
+                String numStr = codigo.substring(4).replaceFirst("^0+(?!$)", "");
+                try {
+                    int num = Integer.parseInt(numStr);
+                    if (num > max) max = num;
+                } catch (NumberFormatException ignored) {
+                    // ignora códigos basura
+                }
+            }
+        }
+        int siguienteNumero = max + 1;
+        String nuevoCodigo;
+        do {
+            nuevoCodigo = "CAM-" + siguienteNumero++;
+        } while (daoCampo.existsByCodigo(nuevoCodigo));
+        return nuevoCodigo;
     }
 
     @Override
@@ -97,67 +120,54 @@ public class ServiceCampo implements IServiceCampo {
         }
     }
 
-        @Override
+    @Override
     @Transactional
     public DtoCampo save(DtoCampo dtoCampo, String accessToken) {
         validateDtoCampo(dtoCampo);
-    
-        // Validar existencia de campo con el mismo código
+
+        dtoCampo.setCodigo(generarCodigoUnico());
+
         Optional<Campo> existente = daoCampo.findByCodigo(dtoCampo.getCodigo());
         if (existente.isPresent() && Estado.A.equals(existente.get().getEstado())) {
             throw new DataValidationException("Ya existe un campo activo con el código especificado.");
         }
-    
-        // Validar existencia de tipoCampo
+
         TipoCampo tipoCampo = null;
         if (dtoCampo.getTipoCampo() != null && !dtoCampo.getTipoCampo().isEmpty()) {
             tipoCampo = daoTipoCampo.findByCodigo(dtoCampo.getTipoCampo())
                     .orElseThrow(() -> new DataValidationException("TipoCampo no encontrado: " + dtoCampo.getTipoCampo()));
         }
-    
+
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
         String username = (String) userInfo.get("name");
-    
-        // Si es reactivación, actualizar el campo existente
-        if (existente.isPresent()) {
-            Campo campo = existente.get();
-            campo.setEstado(Estado.A);
-            campo.setNombre(dtoCampo.getNombre());
-            campo.setDescripcion(dtoCampo.getDescripcion());
-            campo.setFechaCreacion(new Date());
-            campo.setUsuarioCreacion(username);
-            campo.setTipoCampo(tipoCampo);
-    
-            // Crear la matriz solo cuando todo es válido
-            Matriz matriz = new Matriz();
-            matriz.setFila(dtoCampo.getFilaMatriz());
-            matriz.setColumna(dtoCampo.getColumnaMatriz());
-            matriz.setFechaCreacion(new Date());
-            matriz.setUsuarioCreacion(username);
-            matriz = daoMatriz.save(matriz);
-    
-            campo.setMatriz(matriz);
-            return convertToDto(daoCampo.save(campo));
-        }
-    
-        // Crear la matriz solo cuando todo es válido
-        Matriz matriz = new Matriz();
-        matriz.setFila(dtoCampo.getFilaMatriz());
-        matriz.setColumna(dtoCampo.getColumnaMatriz());
-        matriz.setFechaCreacion(new Date());
-        matriz.setUsuarioCreacion(username);
-        matriz = daoMatriz.save(matriz);
-    
+
+        // Serializar directamente los objetos
+        String opcionesJson = toJsonFromObjects(dtoCampo.getOpciones());
+        String columnasJson = toJsonFromObjects(dtoCampo.getColumnas());
+        String filasJson = toJsonFromObjects(dtoCampo.getFilas());
+        String estructuraJson = toJsonFromObject(dtoCampo.getEstructuraTablaPersonalizada());
+
         Campo campo = new Campo();
         campo.setCodigo(dtoCampo.getCodigo());
-        campo.setNombre(dtoCampo.getNombre());
-        campo.setDescripcion(dtoCampo.getDescripcion());
+        campo.setLabel(dtoCampo.getLabel());
+        campo.setTipoCampo(tipoCampo);
+        campo.setRequerido(dtoCampo.getRequerido());
+        campo.setSoloLectura(dtoCampo.getSoloLectura());
+        campo.setEsMultiple(dtoCampo.getEsMultiple());
+        campo.setOpciones(opcionesJson);
+        campo.setColumnas(columnasJson);
+        campo.setFilas(filasJson);
+        campo.setEstructuraTablaPersonalizada(estructuraJson);
+        campo.setTipoConfiguracionTabla(dtoCampo.getTipoConfiguracionTabla());
+        campo.setEsMutable(dtoCampo.getEsMutable());
+        campo.setMinFilas(dtoCampo.getMinFilas());
+        campo.setMaxFilas(dtoCampo.getMaxFilas());
+        campo.setMinColumnas(dtoCampo.getMinColumnas());
+        campo.setMaxColumnas(dtoCampo.getMaxColumnas());
         campo.setEstado(Estado.A);
         campo.setFechaCreacion(new Date());
         campo.setUsuarioCreacion(username);
-        campo.setTipoCampo(tipoCampo);
-        campo.setMatriz(matriz);
-    
+
         return convertToDto(daoCampo.save(campo));
     }
 
@@ -165,44 +175,36 @@ public class ServiceCampo implements IServiceCampo {
     @Transactional
     public DtoCampo update(DtoCampo dtoCampo, String accessToken) {
         validateDtoCampo(dtoCampo);
+
         Campo campoActual = daoCampo.findByCodigo(dtoCampo.getCodigo())
                 .orElseThrow(() -> new DataValidationException("El campo con el código especificado no existe."));
 
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
         String username = (String) userInfo.get("name");
 
-        // No permitir cambiar estado a inactivo desde update (usar delete para eso)
-        if (Estado.I.equals(dtoCampo.getEstado()) && Estado.A.equals(campoActual.getEstado())) {
-            throw new DataValidationException("Para desactivar un campo use el método delete()");
-        }
-
-        campoActual.setNombre(dtoCampo.getNombre());
-        campoActual.setDescripcion(dtoCampo.getDescripcion());
-        campoActual.setEstado(Estado.A);
+        campoActual.setLabel(dtoCampo.getLabel());
+        campoActual.setRequerido(dtoCampo.getRequerido());
+        campoActual.setSoloLectura(dtoCampo.getSoloLectura());
+        campoActual.setEsMultiple(dtoCampo.getEsMultiple());
+        campoActual.setOpciones(toJsonFromObjects(dtoCampo.getOpciones()));
+        campoActual.setColumnas(toJsonFromObjects(dtoCampo.getColumnas()));
+        campoActual.setFilas(toJsonFromObjects(dtoCampo.getFilas()));
+        campoActual.setEstructuraTablaPersonalizada(toJsonFromObject(dtoCampo.getEstructuraTablaPersonalizada()));
+        campoActual.setTipoConfiguracionTabla(dtoCampo.getTipoConfiguracionTabla());
+        campoActual.setEsMutable(dtoCampo.getEsMutable());
+        campoActual.setMinFilas(dtoCampo.getMinFilas());
+        campoActual.setMaxFilas(dtoCampo.getMaxFilas());
+        campoActual.setMinColumnas(dtoCampo.getMinColumnas());
+        campoActual.setMaxColumnas(dtoCampo.getMaxColumnas());
+        campoActual.setEstado(dtoCampo.getEstado());
         campoActual.setFechaModificacion(new Date());
         campoActual.setUsuarioModificacion(username);
 
-        TipoCampo tipoCampo = null;
         if (dtoCampo.getTipoCampo() != null && !dtoCampo.getTipoCampo().isEmpty()) {
-            tipoCampo = daoTipoCampo.findByCodigo(dtoCampo.getTipoCampo())
+            TipoCampo tipoCampo = daoTipoCampo.findByCodigo(dtoCampo.getTipoCampo())
                     .orElseThrow(() -> new DataValidationException("TipoCampo no encontrado: " + dtoCampo.getTipoCampo()));
+            campoActual.setTipoCampo(tipoCampo);
         }
-        campoActual.setTipoCampo(tipoCampo);
-
-        // Actualizar la matriz asociada
-        Matriz matriz = campoActual.getMatriz();
-        if (matriz == null) {
-            matriz = new Matriz();
-            matriz.setFechaCreacion(new Date());
-            matriz.setUsuarioCreacion(username);
-        }
-        matriz.setFila(dtoCampo.getFilaMatriz());
-        matriz.setColumna(dtoCampo.getColumnaMatriz());
-        matriz.setFechaModificacion(new Date());
-        matriz.setUsuarioModificacion(username);
-        matriz = daoMatriz.save(matriz);
-
-        campoActual.setMatriz(matriz);
 
         return convertToDto(daoCampo.save(campoActual));
     }
@@ -213,25 +215,57 @@ public class ServiceCampo implements IServiceCampo {
         validateCodigo(codigo);
         Campo campo = daoCampo.findByCodigo(codigo)
                 .orElseThrow(() -> new DataValidationException("No se encontró un campo con el código especificado."));
-    
-        // Eliminar hijos SeccionCampo en la base de datos
-        daoSeccionCampo.deleteByCampo(campo);
-    
+
+        List<SeccionCampo> relacionesActivas = daoSeccionCampo.findByCampoCodigo(codigo);
+        if (!relacionesActivas.isEmpty()) {
+            throw new DataValidationException("No se puede eliminar el campo porque tiene " +
+                    relacionesActivas.size() + " relaciones activas con secciones. " +
+                    "Primero debe eliminar las relaciones en las secciones asociadas.");
+        }
+
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
         String username = (String) userInfo.get("name");
-    
+
         campo.setEstado(Estado.I);
         campo.setFechaModificacion(new Date());
         campo.setUsuarioModificacion(username);
-    
-        // Desasociar la matriz antes de eliminarla
-        Matriz matriz = campo.getMatriz();
-        campo.setMatriz(null);
-        daoCampo.save(campo); // Guarda el campo sin la matriz asociada
-    
-        // Ahora sí elimina la matriz si existe
-        if (matriz != null) {
-            daoMatriz.delete(matriz);
+
+        daoCampo.save(campo);
+    }
+
+    private String toJsonFromObjects(List<Object> list) {
+        try {
+            return list != null ? objectMapper.writeValueAsString(list) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<Object> fromJsonToObjects(String json) {
+        try {
+            if (json == null || json.isEmpty()) return null;
+            
+            // Deserializar directamente como lista de objetos
+            return objectMapper.readValue(json, new TypeReference<List<Object>>() {});
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String toJsonFromObject(Object obj) {
+        try {
+            return obj != null ? objectMapper.writeValueAsString(obj) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object fromJsonToObject(String json) {
+        try {
+            if (json == null || json.isEmpty()) return null;
+            return objectMapper.readValue(json, Object.class);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -245,52 +279,65 @@ public class ServiceCampo implements IServiceCampo {
         if (dtoCampo == null) {
             throw new DataValidationException("DtoCampo no puede ser nulo");
         }
-        validateCodigo(dtoCampo.getCodigo());
-        if (dtoCampo.getNombre() == null || dtoCampo.getNombre().isEmpty()) {
-            throw new DataValidationException("Nombre es requerido.");
-        }
-        if (dtoCampo.getDescripcion() == null || dtoCampo.getDescripcion().isEmpty()) {
-            throw new DataValidationException("Descripción es requerida");
-        }
         if (dtoCampo.getTipoCampo() == null || dtoCampo.getTipoCampo().isEmpty()) {
             throw new DataValidationException("El tipoCampo es requerido");
         }
-        if (dtoCampo.getFilaMatriz() == null) {
-            throw new DataValidationException("Fila de la matriz es requerida");
-        }
-        if (dtoCampo.getColumnaMatriz() == null) {
-            throw new DataValidationException("Columna de la matriz es requerida");
+        
+        // Validación específica para tablas
+        if ("TABLA".equals(dtoCampo.getTipoCampo())) {
+            if (dtoCampo.getTipoConfiguracionTabla() == null) {
+                throw new DataValidationException("El tipoConfiguracionTabla es requerido para campos de tipo TABLA");
+            }
+            
+            switch (dtoCampo.getTipoConfiguracionTabla()) {
+                case SOLO_COLUMNAS:
+                    if (dtoCampo.getColumnas() == null || dtoCampo.getColumnas().isEmpty()) {
+                        throw new DataValidationException("Las columnas son requeridas para configuración SOLO_COLUMNAS");
+                    }
+                    break;
+                case SOLO_FILAS:
+                    if (dtoCampo.getFilas() == null || dtoCampo.getFilas().isEmpty()) {
+                        throw new DataValidationException("Las filas son requeridas para configuración SOLO_FILAS");
+                    }
+                    break;
+                case COLUMNAS_Y_FILAS:
+                    if ((dtoCampo.getColumnas() == null || dtoCampo.getColumnas().isEmpty()) ||
+                        (dtoCampo.getFilas() == null || dtoCampo.getFilas().isEmpty())) {
+                        throw new DataValidationException("Tanto columnas como filas son requeridas para configuración COLUMNAS_Y_FILAS");
+                    }
+                    break;
+            }
         }
     }
 
     private DtoCampo convertToDto(Campo campo) {
-        if (campo == null) {
-            return null;
-        }
+        if (campo == null) return null;
         DtoCampo dto = new DtoCampo();
         dto.setId(campo.getId());
         dto.setCodigo(campo.getCodigo());
-        dto.setNombre(campo.getNombre());
-        dto.setDescripcion(campo.getDescripcion());
+        dto.setLabel(campo.getLabel());
+        dto.setTipoCampo(campo.getTipoCampo() != null ? campo.getTipoCampo().getCodigo() : null);
+        dto.setRequerido(campo.getRequerido());
+        dto.setSoloLectura(campo.getSoloLectura());
+        dto.setEsMultiple(campo.getEsMultiple());
+        
+        // Deserializar directamente como objetos
+        dto.setOpciones(fromJsonToObjects(campo.getOpciones()));
+        dto.setColumnas(fromJsonToObjects(campo.getColumnas()));
+        dto.setFilas(fromJsonToObjects(campo.getFilas()));
+        dto.setEstructuraTablaPersonalizada(fromJsonToObject(campo.getEstructuraTablaPersonalizada()));
+        
+        dto.setTipoConfiguracionTabla(campo.getTipoConfiguracionTabla());
+        dto.setEsMutable(campo.getEsMutable());
+        dto.setMinFilas(campo.getMinFilas());
+        dto.setMaxFilas(campo.getMaxFilas());
+        dto.setMinColumnas(campo.getMinColumnas());
+        dto.setMaxColumnas(campo.getMaxColumnas());
         dto.setEstado(campo.getEstado());
-        dto.setFechaCreacion(campo.getFechaCreacion());
         dto.setUsuarioCreacion(campo.getUsuarioCreacion());
-        dto.setFechaModificacion(campo.getFechaModificacion());
+        dto.setFechaCreacion(campo.getFechaCreacion());
         dto.setUsuarioModificacion(campo.getUsuarioModificacion());
-
-        if (campo.getTipoCampo() != null) {
-            dto.setTipoCampo(campo.getTipoCampo().getCodigo());
-        } else {
-            dto.setTipoCampo(null);
-        }
-
-        if (campo.getMatriz() != null) {
-            dto.setFilaMatriz(campo.getMatriz().getFila());
-            dto.setColumnaMatriz(campo.getMatriz().getColumna());
-        } else {
-            dto.setFilaMatriz(null);
-            dto.setColumnaMatriz(null);
-        }
+        dto.setFechaModificacion(campo.getFechaModificacion());
         return dto;
     }
 }

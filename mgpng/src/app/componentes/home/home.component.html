@@ -1,0 +1,32 @@
+<div class="home-container">
+  <img src="assets/layout/images/Espe-logo100.png" alt="Logo ESPE" class="home-logo" />
+  <h1>Bienvenido</h1>
+  <h2 class="home-title">Sistema de Gestión Institucional</h2>
+
+  <div class="dashboard-modules">
+    <div class="dashboard-card" (click)="goTo('lineamiento/operativo/clasif-presup/naturaleza')">
+      <i class="pi pi-sitemap"></i>
+      <div class="card-title">Lineamientos</div>
+      <div class="card-desc">Gestiona los lineamientos estratégicos y operativos institucionales.</div>
+    </div>
+    <div class="dashboard-card" (click)="goTo('gestionPoa')">
+      <i class="pi pi-check-square"></i>
+      <div class="card-title">POA</div>
+      <div class="card-desc">Planifica y da seguimiento a los POA de tu área o unidad.</div>
+    </div>
+    <div class="dashboard-card" (click)="goTo('formBuild/lista')">
+      <i class="pi pi-file"></i>
+      <div class="card-title">Formularios</div>
+      <div class="card-desc">Crea, edita y consulta formularios institucionales.</div>
+    </div>
+  </div>
+
+  <div class="home-info">
+    <h3>Noticias y Avisos</h3>
+    <ul>
+      <li>Actualización de POA disponible desde el 10 de junio.</li>
+      <li>Nuevo manual de usuario en la sección de ayuda.</li>
+      <li>Soporte institucional: soporte&#64;espe.edu.ec</li>
+    </ul>
+  </div>
+</div>

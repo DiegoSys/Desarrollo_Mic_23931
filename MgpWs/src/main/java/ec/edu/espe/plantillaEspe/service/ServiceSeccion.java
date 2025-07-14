@@ -20,7 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class ServiceSeccion implements IServiceSeccion {    private final DaoSeccion daoSeccion;
+public class ServiceSeccion implements IServiceSeccion {
+    private final DaoSeccion daoSeccion;
     private final DaoProyectoSeccion daoProyectoSeccion;
     private final UserInfoService userInfoService;
 
@@ -88,10 +89,36 @@ public class ServiceSeccion implements IServiceSeccion {    private final DaoSec
         }
     }
 
+    // Método para generar un código único con la nomenclatura SEC-#
+    private String generarCodigoUnico() {
+        List<String> codigos = daoSeccion.findAllCodigosLikeSec();
+        int max = 0;
+        for (String codigo : codigos) {
+            if (codigo != null && codigo.startsWith("SEC-")) {
+                String numStr = codigo.substring(4).replaceFirst("^0+(?!$)", ""); // quita ceros a la izquierda
+                try {
+                    int num = Integer.parseInt(numStr);
+                    if (num > max) max = num;
+                } catch (NumberFormatException ignored) {
+                    // ignora códigos basura
+                }
+            }
+        } 
+        int siguienteNumero = max + 1;
+        String nuevoCodigo;
+        do {
+            nuevoCodigo = "SEC-" + siguienteNumero++;
+        } while (daoSeccion.existsByCodigo(nuevoCodigo));
+        return nuevoCodigo;
+    }
+
     @Override
     @Transactional
     public DtoSeccion save(DtoSeccion dtoSeccion, String accessToken) {
         validateDtoSeccion(dtoSeccion);
+
+        // Siempre autogenera el código, ignorando el que venga en el DTO
+        dtoSeccion.setCodigo(generarCodigoUnico());
 
         Optional<Seccion> existente = daoSeccion.findByCodigo(dtoSeccion.getCodigo());
         Map<String, Object> userInfo = userInfoService.getUserInfo(accessToken);
@@ -145,7 +172,9 @@ public class ServiceSeccion implements IServiceSeccion {    private final DaoSec
         seccionActual.setUsuarioModificacion(username);
 
         return convertToDto(daoSeccion.save(seccionActual));
-    }    @Override
+    }
+
+    @Override
     @Transactional
     public void delete(String codigo, String accessToken) {
         validateCodigo(codigo);
@@ -156,9 +185,9 @@ public class ServiceSeccion implements IServiceSeccion {    private final DaoSec
         List<ProyectoSeccion> relacionesActivas = daoProyectoSeccion.findBySeccionCodigo(codigo);
         if (!relacionesActivas.isEmpty()) {
             // Opción 1: Lanzar excepción (más estricto)
-            throw new DataValidationException("No se puede eliminar la sección porque tiene " + 
-                relacionesActivas.size() + " relaciones activas con proyectos. " +
-                "Primero debe eliminar las relaciones en los proyectos asociados.");
+            throw new DataValidationException("No se puede eliminar la sección porque tiene " +
+                    relacionesActivas.size() + " relaciones activas con proyectos. " +
+                    "Primero debe eliminar las relaciones en los proyectos asociados.");
             
             // Opción 2: Eliminar automáticamente las relaciones (comentado)
             /*
@@ -187,7 +216,7 @@ public class ServiceSeccion implements IServiceSeccion {    private final DaoSec
         if (dtoSeccion == null) {
             throw new DataValidationException("DtoSeccion no puede ser nulo");
         }
-        validateCodigo(dtoSeccion.getCodigo());
+        // No validamos el código aquí porque puede ser autogenerado
         if (dtoSeccion.getNombre() == null || dtoSeccion.getNombre().isEmpty()) {
             throw new DataValidationException("Nombre es requerido.");
         }

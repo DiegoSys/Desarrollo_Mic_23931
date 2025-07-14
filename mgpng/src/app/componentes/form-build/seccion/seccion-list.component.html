@@ -5,14 +5,13 @@
       <div class="header-row">
         <span class="header-icon"><i class="pi pi-sitemap"></i></span>
         <div class="header-titles">
-          <span class="header-title-main">Secciones {{ codigoTipologia ? 'de ' + codigoTipologia : 'del Formulario' }}</span>
-          <span class="header-title-sub"><i class="pi pi-list"></i> {{ codigoTipologia ? 'Administración de secciones por tipología' : 'Administración de secciones' }}</span>
+          <span class="header-title-main">Secciones {{ codigoTipologia ? 'de ' + codigoTipologia : 'del Formulario'
+            }}</span>
+          <span class="header-title-sub"><i class="pi pi-list"></i> {{ codigoTipologia ? 'Administración de secciones
+            por tipología' : 'Administración de secciones' }}</span>
         </div>
-        <button
-          class="btn btn-institutional header-btn"
-          (click)="openForm()"
-          *ngIf="codigoTipologia || rows?.length > 0"
-        >
+        <button class="btn btn-institutional header-btn" (click)="openForm()"
+          *ngIf="codigoTipologia || rows?.length > 0">
           <i class="pi pi-plus"></i> Nueva Sección
         </button>
       </div>
@@ -23,24 +22,12 @@
     <!-- Barra de búsqueda -->
     <div class="selector-toolbar">
       <span class="search-wrapper">
-        <input
-          type="text"
-          pInputText
-          [(ngModel)]="searchValue"
-          placeholder="Buscar..."
-          (ngModelChange)="onSearchInputChange($event)"
-          class="selector-search-input"
-          autocomplete="off"
-        />
-        <button
-          type="button"
-          (click)="handleSearch()"
-          class="p-button-sm selector-search-btn"
-          aria-label="Buscar"
-        >
+        <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Buscar Por Nombre"
+          (ngModelChange)="onSearchInputChange($event)" class="selector-search-input" autocomplete="off" />
+        <button type="button" (click)="handleSearch()" class="p-button-sm selector-search-btn" aria-label="Buscar">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <circle cx="9" cy="9" r="7" stroke="#fff" stroke-width="2"/>
-            <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="9" cy="9" r="7" stroke="#fff" stroke-width="2" />
+            <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
       </span>
@@ -59,34 +46,22 @@
           </div>
           <form #seccionForm="ngForm" (ngSubmit)="save()" autocomplete="off">
             <div class="form-row">
-              <div class="form-group" *ngIf="!codigoTipologia">
+              <!-- SOLO mostrar el código al editar -->
+              <div class="form-group" *ngIf="editing">
                 <label for="codigo">Código</label>
-                <input id="codigo" name="codigo" type="text" class="form-control"
-                       required [(ngModel)]="formModel.codigo" maxlength="30" [readonly]="editing"
-                       placeholder="SEC-001">
-              </div>
-              <div class="form-group" *ngIf="codigoTipologia && editing">
-                <label>Código Completo</label>
-                <input type="text" class="form-control" [(ngModel)]="formModel.codigoCompleto" readonly>
-              </div>
-              <div class="form-group" *ngIf="codigoTipologia && !editing">
-                <label for="codigo">Código</label>
-                <input id="codigo" name="codigo" type="text" class="form-control"
-                       required [(ngModel)]="formModel.codigo" maxlength="30"
-                       placeholder="SEC-001">
+                <input id="codigo" name="codigo" type="text" class="form-control" [(ngModel)]="formModel.codigo"
+                  readonly>
               </div>
               <div class="form-group">
                 <label for="nombre">Nombre</label>
-                <input id="nombre" name="nombre" type="text" class="form-control"
-                       required [(ngModel)]="formModel.nombre" maxlength="100"
-                       placeholder="Nombre descriptivo">
+                <input id="nombre" name="nombre" type="text" class="form-control" required
+                  [(ngModel)]="formModel.nombre" maxlength="100" placeholder="Nombre descriptivo">
               </div>
             </div>
             <div class="form-group full-width">
               <label for="descripcion">Descripción</label>
-              <textarea id="descripcion" name="descripcion" class="form-control"
-                        rows="3" [(ngModel)]="formModel.descripcion" maxlength="250"
-                        placeholder="Descripción de la sección"></textarea>
+              <textarea id="descripcion" name="descripcion" class="form-control" rows="3"
+                [(ngModel)]="formModel.descripcion" maxlength="250" placeholder="Descripción de la sección"></textarea>
             </div>
             <div class="form-actions">
               <button type="button" class="btn btn-outline" (click)="closeForm()">Cancelar</button>
@@ -103,11 +78,9 @@
     <div class="sections-manager" *ngIf="codigoTipologia; else normalView">
       <div class="sections-container">
         <!-- Available Sections -->
-        <div class="sections-column available" cdkDropList
-             #availableList="cdkDropList"
-             [cdkDropListData]="availableSections"
-             [cdkDropListConnectedTo]="[associatedList]"
-             (cdkDropListDropped)="drop($event)">
+        <div class="sections-column available" cdkDropList #availableList="cdkDropList"
+          [cdkDropListData]="availableSections" [cdkDropListConnectedTo]="[associatedList]"
+          (cdkDropListDropped)="drop($event)">
           <div class="column-header">
             <h4><i class="pi pi-list"></i> Disponibles</h4>
             <span class="badge">{{ totalAvailableRecords || 0 }}</span>
@@ -120,11 +93,13 @@
                   <span class="section-code">{{ seccion.codigo }}</span>
                 </div>
                 <p class="section-desc" *ngIf="seccion.descripcion">{{ seccion.descripcion }}</p>
-                
+
                 <!-- Vista previa de campos -->
                 <div class="section-fields-preview">
-                  <div class="fields-content" *ngIf="!sectionFieldsLoading[seccion.codigo!] && sectionFields[seccion.codigo!]?.length > 0; else noFieldsAvailable">
-                    <div class="field-item" *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index">
+                  <div class="fields-content"
+                    *ngIf="!sectionFieldsLoading[seccion.codigo!] && sectionFields[seccion.codigo!]?.length > 0; else noFieldsAvailable">
+                    <div class="field-item"
+                      *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index">
                       <i [class]="fieldInfo.split(':')[0]"></i>
                       <span>{{ fieldInfo.split(':')[1].replace('...', '') }}</span>
                       <span class="more-dots" *ngIf="fieldInfo.split(':')[1].includes('...')">...</span>
@@ -140,7 +115,7 @@
                     </div>
                   </ng-template>
                 </div>
-                
+
                 <div class="section-actions">
                   <button class="btn-icon" (click)="openForm(seccion)" title="Editar">
                     <i class="pi pi-pencil"></i>
@@ -160,20 +135,15 @@
               </button>
             </div>
           </div>
-          <p-paginator *ngIf="totalAvailableRecords > availableSize" 
-                      [rows]="availableSize" 
-                      [totalRecords]="totalAvailableRecords" 
-                      [first]="availablePage * availableSize" 
-                      (onPageChange)="handlePageChange($event)" 
-                      styleClass="dual-paginator"></p-paginator>
+          <p-paginator *ngIf="totalAvailableRecords > availableSize" [rows]="availableSize"
+            [totalRecords]="totalAvailableRecords" [first]="availablePage * availableSize"
+            (onPageChange)="handlePageChange($event)" styleClass="dual-paginator"></p-paginator>
         </div>
 
         <!-- Associated Sections -->
-        <div class="sections-column associated" cdkDropList
-             #associatedList="cdkDropList"
-             [cdkDropListData]="associatedSections"
-             [cdkDropListConnectedTo]="[availableList]"
-             (cdkDropListDropped)="drop($event)">
+        <div class="sections-column associated" cdkDropList #associatedList="cdkDropList"
+          [cdkDropListData]="associatedSections" [cdkDropListConnectedTo]="[availableList]"
+          (cdkDropListDropped)="drop($event)">
           <div class="column-header">
             <h4><i class="pi pi-check-circle"></i> Asociadas</h4>
             <span class="badge">{{ associatedSections?.length || 0 }}</span>
@@ -186,11 +156,13 @@
                   <span class="section-code">{{ seccion.codigo }}</span>
                 </div>
                 <p class="section-desc" *ngIf="seccion.descripcion">{{ seccion.descripcion }}</p>
-                
+
                 <!-- Vista previa de campos -->
                 <div class="section-fields-preview">
-                  <div class="fields-content" *ngIf="!sectionFieldsLoading[seccion.codigo!] && sectionFields[seccion.codigo!]?.length > 0; else noFieldsAssociated">
-                    <div class="field-item" *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index">
+                  <div class="fields-content"
+                    *ngIf="!sectionFieldsLoading[seccion.codigo!] && sectionFields[seccion.codigo!]?.length > 0; else noFieldsAssociated">
+                    <div class="field-item"
+                      *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index">
                       <i [class]="fieldInfo.split(':')[0]"></i>
                       <span>{{ fieldInfo.split(':')[1].replace('...', '') }}</span>
                       <span class="more-dots" *ngIf="fieldInfo.split(':')[1].includes('...')">...</span>
@@ -213,7 +185,8 @@
                   <button class="btn-icon" (click)="openForm(seccion)" title="Editar">
                     <i class="pi pi-pencil"></i>
                   </button>
-                  <button class="btn-icon btn-danger" (click)="removeSectionFromTypology(seccion)" title="Quitar de tipología">
+                  <button class="btn-icon btn-danger" (click)="removeSectionFromTypology(seccion)"
+                    title="Quitar de tipología">
                     <i class="pi pi-times"></i>
                   </button>
                 </div>
@@ -231,30 +204,14 @@
     <!-- Normal View - SOLO AQUÍ se usa app-preview-card -->
     <ng-template #normalView>
       <div class="cards-grid" *ngIf="rows?.length > 0; else noData">
-        <app-preview-card
-          *ngFor="let seccion of rows"
-          [title]="seccion.nombre"
-          [code]="seccion.codigo"
+        <app-preview-card *ngFor="let seccion of rows" [title]="seccion.nombre" [code]="seccion.codigo"
           [status]="seccion.estado?.toLowerCase() === 'a' ? 'activo' : 'inactivo'"
           [statusText]="seccion.estado?.toLowerCase() === 'a' ? 'Activo' : 'Inactivo'"
-          [description]="getSectionFieldsDescription(seccion.codigo)"
-          [date]="seccion.fechaCreacion"
-          [size]="'medium'"
-          [previewType]="'section'"
-          [fieldCount]="0"
-          [showFooter]="true"
-          [showEdit]="true"
-          [showDelete]="true"
-          [showView]="false"
-          [showGoToFields]="true"
-          [showActions]="true"
-          [isInDualView]="false"
-          [isDraggable]="false"
-          (onClick)="goToCampo(seccion)"
-          (onEdit)="openForm(seccion)"
-          (onDelete)="confirmDelete(seccion)"
-          (onGoToFields)="goToCampo(seccion)"
-        >
+          [description]="getSectionFieldsDescription(seccion.codigo)" [date]="seccion.fechaCreacion" [size]="'medium'"
+          [previewType]="'section'" [fieldCount]="0" [showFooter]="true" [showEdit]="true" [showDelete]="true"
+          [showView]="false" [showGoToFields]="true" [showActions]="true" [isInDualView]="false" [isDraggable]="false"
+          (onClick)="goToCampo(seccion)" (onEdit)="openForm(seccion)" (onDelete)="confirmDelete(seccion)"
+          (onGoToFields)="goToCampo(seccion)">
           <!-- Contenido específico del preview de sección -->
           <div class="card-content section-preview-content">
             <!-- Vista previa simplificada de la sección -->
@@ -267,7 +224,9 @@
                 <span>{{seccion.nombre}}</span>
               </div>
               <div class="section-fields">
-                <div class="section-field" *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index" [ngClass]="{'no-fields': fieldInfo === 'No hay campos'}">
+                <div class="section-field"
+                  *ngFor="let fieldInfo of getSectionFieldsForPreview(seccion.codigo!).split('|'); let i = index"
+                  [ngClass]="{'no-fields': fieldInfo === 'No hay campos'}">
                   <ng-container *ngIf="fieldInfo !== 'No hay campos'; else noFieldsTemplate">
                     <i [class]="fieldInfo.split(':')[0]"></i>
                     <span>{{fieldInfo.split(':')[1]}}</span>
@@ -286,12 +245,8 @@
         </app-preview-card>
       </div>
 
-      <p-paginator
-        [rows]="size"
-        [totalRecords]="totalRecords"
-        [first]="page * size"
-        (onPageChange)="handlePageChange($event)"
-        styleClass="paginator-compact">
+      <p-paginator [rows]="size" [totalRecords]="totalRecords" [first]="page * size"
+        (onPageChange)="handlePageChange($event)" styleClass="paginator-compact">
       </p-paginator>
     </ng-template>
 

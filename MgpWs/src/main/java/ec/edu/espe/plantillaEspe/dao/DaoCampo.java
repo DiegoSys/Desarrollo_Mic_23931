@@ -5,6 +5,7 @@ import ec.edu.espe.plantillaEspe.model.Campo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,4 +46,20 @@ public interface DaoCampo extends JpaRepository<Campo, String> {
      * @return Página de campos con el estado especificado.
      */
     Page<Campo> findByEstado(Estado estado, Pageable pageable);
-}
+
+    /**
+     * Busca todos los códigos de campos que comienzan con 'CAM-'.
+     *
+     * @return Lista de códigos de campos que cumplen con el criterio.
+     */
+    @Query("SELECT c.codigo FROM Campo c WHERE c.codigo LIKE 'CAM-%'")
+    List<String> findAllCodigosLikeCam();
+
+    /**
+     * Verifica si existe un campo con el código especificado.
+     *
+     * @param codigo Código del campo.
+     * @return true si existe un campo con el código, false en caso contrario.
+     */
+    boolean existsByCodigo(String codigo);
+}   

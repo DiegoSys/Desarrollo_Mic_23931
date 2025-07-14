@@ -1,0 +1,226 @@
+<div class="field-preview" [ngClass]="'field-type-' + campo.tipoCampo">
+  <!-- Vista previa para campos de texto -->
+  <div *ngIf="campo.tipoCampo === 'TXT'" class="text-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      [placeholder]="'Ingrese ' + campo.label.toLowerCase()"
+      [disabled]="true">
+  </div>
+
+  <!-- Vista previa para áreas de texto -->
+  <div *ngIf="campo.tipoCampo === 'AREA'" class="textarea-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <textarea 
+      class="form-control" 
+      rows="3"
+      [placeholder]="'Ingrese ' + campo.label.toLowerCase()"
+      [disabled]="true"></textarea>
+  </div>
+
+  <!-- Vista previa para campos numéricos -->
+  <div *ngIf="campo.tipoCampo === 'NUM'" class="numeric-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <input 
+      type="number" 
+      class="form-control" 
+      [placeholder]="'Ingrese número'"
+      [disabled]="true">
+  </div>
+
+  <!-- Vista previa para selectores simples -->
+  <div *ngIf="campo.tipoCampo === 'SEL'" class="select-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <select class="form-control" [disabled]="true">
+      <option value="" selected disabled>Seleccione una opción</option>
+      <option *ngFor="let opcion of campo.opciones" [value]="opcion">{{ opcion }}</option>
+    </select>
+  </div>
+
+  <!-- Vista previa para selectores múltiples -->
+  <div *ngIf="campo.tipoCampo === 'SELM'" class="multi-select-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <select class="form-control" [disabled]="true" multiple>
+      <option *ngFor="let opcion of campo.opciones" [value]="opcion">{{ opcion }}</option>
+    </select>
+    <small class="text-muted">Mantén Ctrl para seleccionar múltiples opciones</small>
+  </div>
+
+  <!-- Vista previa para tablas -->
+  <div *ngIf="campo.tipoCampo === 'TABLA'" class="table-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <div class="table-preview-container table-responsive-fit">
+      
+      <!-- TABLA_PERSONALIZADA: tabla con estructura personalizada -->
+      <table *ngIf="customTable" class="table table-bordered table-sm table-personalizada table-fit">
+        <tbody>
+          <tr *ngFor="let row of customTable.rows; let i = index">
+            <td *ngFor="let cell of row.cells; let j = index" 
+                [attr.colspan]="cell.colspan || 1"
+                [ngClass]="'cell-' + cell.type + (cell.class ? ' ' + cell.class : '')"
+                class="table-cell-fit">
+              <ng-container [ngSwitch]="cell.type">
+                <textarea *ngSwitchCase="'input'" 
+                       class="form-control table-textarea table-textarea-fit" 
+                       [value]="cell.value" 
+                       [disabled]="!isEditable || !cell.isEditable"
+                       rows="1"></textarea>
+                <strong *ngSwitchCase="'header'">{{ cell.value || 'Header' }}</strong>
+                <span *ngSwitchCase="'label'">{{ cell.value || 'Label' }}</span>
+                <span *ngSwitchDefault>{{ cell.value || '' }}</span>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- SOLO_COLUMNAS: tabla con solo columnas (horizontal) -->
+      <table *ngIf="soloColumnasTable" class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th *ngFor="let header of soloColumnasTable.headers">
+              {{ header.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of soloColumnasTable.rows">
+            <td *ngFor="let cell of row.cells">
+              <textarea class="form-control table-textarea" 
+                       [disabled]="!isEditable" 
+                       rows="1"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- SOLO_FILAS: tabla con solo filas -->
+      <table *ngIf="soloFilasTable" class="table table-bordered table-sm table-solo-filas">
+        <thead>
+          <tr>
+            <th>Fila</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of soloFilasTable.rows">
+            <td><strong>{{ row.label }}</strong></td>
+            <td *ngFor="let cell of row.cells">
+              <textarea class="form-control table-textarea" 
+                       [disabled]="!isEditable" 
+                       rows="1"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- COLUMNAS_Y_FILAS: tabla completa -->
+      <table *ngIf="columnasYFilasTable" class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th *ngFor="let header of columnasYFilasTable.headers">
+              {{ header.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of columnasYFilasTable.rows">
+            <td>{{ row.label }}</td>
+            <td *ngFor="let cell of row.cells">
+              <textarea class="form-control table-textarea" 
+                       [disabled]="!isEditable" 
+                       rows="1"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Fallback: tabla por defecto -->
+      <table *ngIf="fallbackTable" class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th *ngFor="let header of fallbackTable.headers">
+              {{ header.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of fallbackTable.rows">
+            <td *ngIf="row.label">{{ row.label }}</td>
+            <td *ngFor="let cell of row.cells">
+              <textarea class="form-control table-textarea" 
+                       [disabled]="!isEditable" 
+                       rows="1"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Vista previa para checkboxes -->
+  <div *ngIf="campo.tipoCampo === 'CHK'" class="checkbox-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <div class="checkbox-options">
+      <div class="checkbox-option" *ngFor="let opcion of campo.opciones">
+        <input type="checkbox" [id]="'chk-' + opcion" [disabled]="true">
+        <label [for]="'chk-' + opcion">{{ opcion }}</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista previa para radio buttons -->
+  <div *ngIf="campo.tipoCampo === 'RADIO'" class="radio-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <div class="radio-group">
+      <div *ngFor="let opcion of campo.opciones" class="radio-item">
+        <input type="radio" [name]="'preview-' + campo.codigo" [id]="'preview-' + opcion" [disabled]="true">
+        <label [for]="'preview-' + opcion">{{ opcion }}</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista previa para campos de fecha -->
+  <div *ngIf="campo.tipoCampo === 'DATE'" class="date-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <input 
+      type="date" 
+      class="form-control" 
+      [disabled]="true">
+  </div>
+
+  <!-- Vista previa para campos de archivo -->
+  <div *ngIf="campo.tipoCampo === 'FILE'" class="file-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <div class="file-input-preview">
+      <input 
+        type="file" 
+        class="form-control" 
+        [disabled]="true">
+      <small class="text-muted">Seleccione un archivo</small>
+    </div>
+  </div>
+
+  <!-- Vista previa para tipos de campo no específicos -->
+  <div *ngIf="!isKnownFieldType(campo.tipoCampo)" class="unknown-field-preview">
+    <label *ngIf="showLabel" class="field-label">{{ campo.label }}</label>
+    <div class="unknown-field-info">
+      <input 
+        type="text" 
+        class="form-control" 
+        [disabled]="true"
+        placeholder="Vista previa no disponible">
+      <small class="text-muted">Tipo de campo: {{ campo.tipoCampo }}</small>
+    </div>
+  </div>
+
+  <!-- Indicadores de propiedades del campo -->
+  <div class="field-properties" *ngIf="showProperties && hasFieldProperties()">
+    <div class="property-indicators">
+      <span *ngIf="campo.requerido === true" class="badge badge-required">Requerido</span>
+      <span *ngIf="campo.soloLectura === true" class="badge badge-readonly">Solo lectura</span>
+      <span *ngIf="campo.esMultiple === true" class="badge badge-multiple">Múltiple</span>
+    </div>
+  </div>
+</div>
